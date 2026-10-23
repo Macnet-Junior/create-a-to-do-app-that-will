@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GraceTasks - Sacred To-Do & Scripture Flow</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            sacred: {
+              50: '#f5f3ff',
+              100: '#ede9fe',
+              200: '#ddd6fe',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              800: '#3730a3',
+              900: '#312e81',
+            },
+            amber: {
+              450: '#f59e0b',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Canvas Confetti for Task Celebrations -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="h-full bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 flex flex-col transition-colors duration-200 bg-celestial">
+
+  <!-- Top Sticky Navigation & Live Schedule Bar -->
+  <header class="sticky top-0 z-40 glass-panel border-b border-slate-200/80 dark:border-slate-800/80">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        
+        <!-- App Brand -->
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 text-white flex items-center justify-center shadow-md shadow-indigo-500/20">
+            <i data-lucide="book-marked" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-display font-bold text-lg tracking-wider text-slate-900 dark:text-white">GraceTasks</span>
+              <span class="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300">Living Word</span>
+            </div>
+            <p class="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">Tasks & Automated Scripture Publishing</p>
+          </div>
+        </div>
+
+        <!-- Next Verse Countdown Banner -->
+        <div id="header-countdown-container" class="hidden md:flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-indigo-50/80 dark:bg-indigo-950/60 border border-indigo-200/70 dark:border-indigo-800/60 text-xs text-indigo-900 dark:text-indigo-200">
+          <i data-lucide="clock" class="w-3.5 h-3.5 text-indigo-500 animate-pulse"></i>
+          <span class="font-medium text-slate-500 dark:text-slate-400">Next Verse in:</span>
+          <span id="header-countdown-text" class="font-mono font-semibold text-indigo-600 dark:text-indigo-400">Calculating...</span>
+        </div>
+
+        <!-- Quick Actions & Controls -->
+        <div class="flex items-center gap-2 sm:gap-3">
+          
+          <!-- Publish Verse Now (Instant Screen Trigger) -->
+          <button id="btn-trigger-now" title="Publish a Bible verse to screen right now"
+            class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white shadow-sm transition-all shadow-indigo-500/20 active:scale-95">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+            <span class="hidden sm:inline">Publish Verse Now</span>
+            <span class="sm:hidden">Publish</span>
+          </button>
+
+          <!-- Ambient Peaceful Pad Toggle -->
+          <button id="btn-toggle-ambient" title="Toggle peaceful ambient music"
+            class="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+            <i data-lucide="music" class="w-3.5 h-3.5 text-indigo-500"></i>
+            <span id="ambient-btn-label" class="hidden lg:inline">Peace Pad: Off</span>
+          </button>
+
+          <!-- Schedule Settings Modal Trigger -->
+          <button id="btn-open-settings" title="Configure Scripture Publishing Schedule"
+            class="p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+            <i data-lucide="settings" class="w-4 h-4"></i>
+          </button>
+
+          <!-- Dark Mode Toggle -->
+          <button id="btn-toggle-theme" title="Toggle Dark/Light Mode"
+            class="p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+            <i data-lucide="moon" id="theme-icon" class="w-4 h-4"></i>
+          </button>
+
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <nav class="border-b border-slate-200 dark:border-slate-800 bg-white/60 dark:bg-slate-900/60 backdrop-blur-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex gap-2 sm:gap-6 overflow-x-auto py-2.5 no-scrollbar">
+        <button data-tab="tasks" class="tab-btn active flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/70">
+          <i data-lucide="check-square" class="w-4 h-4"></i>
+          <span>Tasks & To-Do</span>
+          <span id="tab-badge-pending" class="ml-1 px-1.5 py-0.5 text-[10px] rounded-full bg-indigo-200 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200">0</span>
+        </button>
+
+        <button data-tab="scheduler" class="tab-btn flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+          <i data-lucide="bell-ring" class="w-4 h-4"></i>
+          <span>Publishing Schedule</span>
+        </button>
+
+        <button data-tab="reader" class="tab-btn flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+          <i data-lucide="book-open" class="w-4 h-4"></i>
+          <span>Read Through All (Bible)</span>
+        </button>
+
+        <button data-tab="favorites" class="tab-btn flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+          <i data-lucide="bookmark" class="w-4 h-4"></i>
+          <span>Saved Verses</span>
+          <span id="tab-badge-saved" class="ml-1 px-1.5 py-0.5 text-[10px] rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300">0</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content Body -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- ========================================== -->
+    <!-- TAB 1: TASKS & TO-DO -->
+    <!-- ========================================== -->
+    <section id="tab-content-tasks" class="space-y-6">
+      
+      <!-- Top Scripture Banner (Today's Word Pinned) -->
+      <div id="dashboard-daily-verse-card" class="radiant-card rounded-2xl p-5 sm:p-6 transition-all duration-300">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div class="space-y-2 max-w-3xl">
+            <div class="flex items-center gap-2.5">
+              <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold uppercase tracking-wider bg-indigo-200/80 dark:bg-indigo-900/80 text-indigo-800 dark:text-indigo-200">
+                Word of the Day
+              </span>
+              <span id="daily-verse-badge" class="text-xs font-medium text-slate-500 dark:text-slate-400">
+                Peace & Comfort
+              </span>
+            </div>
+            <p id="daily-verse-text" class="font-scripture text-lg sm:text-xl leading-relaxed text-slate-900 dark:text-slate-100 italic">
+              "In nothing be anxious, but in everything, by prayer and petition with thanksgiving, let your requests be made known to God..."
+            </p>
+            <p id="daily-verse-reference" class="text-sm font-semibold text-indigo-700 dark:text-indigo-400">
+              — Philippians 4:6-7
+            </p>
+          </div>
+
+          <!-- Audio & Reader Controls on Banner -->
+          <div class="flex flex-wrap items-center gap-2 shrink-0">
+            <button id="btn-listen-daily-verse" class="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/80 shadow-sm hover:shadow transition">
+              <i data-lucide="volume-2" class="w-4 h-4"></i>
+              <span id="btn-listen-daily-label">Listen Audio</span>
+              <div id="daily-verse-waveform" class="audio-wave paused hidden">
+                <span class="audio-bar"></span>
+                <span class="audio-bar"></span>
+                <span class="audio-bar"></span>
+                <span class="audio-bar"></span>
+                <span class="audio-bar"></span>
+              </div>
+            </button>
+
+            <button id="btn-read-daily-context" class="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm transition">
+              <i data-lucide="book-open" class="w-4 h-4"></i>
+              <span>Read Full Chapter</span>
+            </button>
+
+            <button id="btn-favorite-daily-verse" title="Save Verse to Favorites" class="p-2 rounded-xl bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:text-rose-500 dark:hover:text-rose-400 transition">
+              <i data-lucide="heart" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Task Productivity Stats Bar -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+        <div class="glass-panel rounded-xl p-4 flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+            <i data-lucide="list-todo" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <div id="stat-total" class="text-xl font-bold">0</div>
+            <div class="text-xs text-slate-500 dark:text-slate-400">Total Tasks</div>
+          </div>
+        </div>
+
+        <div class="glass-panel rounded-xl p-4 flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+            <i data-lucide="clock" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <div id="stat-pending" class="text-xl font-bold">0</div>
+            <div class="text-xs text-slate-500 dark:text-slate-400">In Progress</div>
+          </div>
+        </div>
+
+        <div class="glass-panel rounded-xl p-4 flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+            <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <div id="stat-completed" class="text-xl font-bold">0</div>
+            <div class="text-xs text-slate-500 dark:text-slate-400">Completed</div>
+          </div>
+        </div>
+
+        <div class="glass-panel rounded-xl p-4 flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg bg-violet-100 dark:bg-violet-950/60 text-violet-600 dark:text-violet-400 flex items-center justify-center">
+            <i data-lucide="sparkles" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <div id="stat-percent" class="text-xl font-bold">0%</div>
+            <div class="text-xs text-slate-500 dark:text-slate-400">Progress Today</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Add Task Bar & Filter Tools -->
+      <div class="glass-panel rounded-2xl p-4 sm:p-5 space-y-4">
+        
+        <!-- Add Task Form -->
+        <form id="form-quick-add" class="flex flex-col sm:flex-row gap-2.5">
+          <div class="relative flex-1">
+            <i data-lucide="plus-circle" class="absolute left-3.5 top-3 w-4 h-4 text-slate-400"></i>
+            <input type="text" id="input-task-title" required placeholder="What would you like to accomplish? (e.g. Morning prayer, Finish report, Call Mom...)" 
+              class="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white transition">
+          </div>
+
+          <!-- Category Select -->
+          <select id="select-task-category" class="px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <option value="Faith & Prayer">🕊️ Faith & Prayer</option>
+            <option value="Work & Study">💼 Work & Study</option>
+            <option value="Personal">🌱 Personal</option>
+            <option value="Family & Home">🏡 Family & Home</option>
+            <option value="Health & Rest">🌿 Health & Rest</option>
+          </select>
+
+          <!-- Priority Select -->
+          <select id="select-task-priority" class="px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <option value="Normal">Priority: Normal</option>
+            <option value="High">🔥 Priority: High</option>
+            <option value="Urgent">⚡ Priority: Urgent</option>
+            <option value="Low">🌱 Priority: Low</option>
+          </select>
+
+          <!-- Due Date -->
+          <input type="date" id="input-task-due" class="px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+
+          <!-- Submit Button -->
+          <button type="submit" class="px-5 py-2.5 rounded-xl font-medium text-sm text-white bg-indigo-600 hover:bg-indigo-700 active:scale-95 transition shadow-sm flex items-center justify-center gap-1.5">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            <span>Add Task</span>
+          </button>
+        </form>
+
+        <!-- Filter Bar & Search -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-slate-200 dark:border-slate-800">
+          
+          <!-- Category / Status Filters -->
+          <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 sm:pb-0">
+            <button data-filter="all" class="filter-pill active px-3 py-1 rounded-lg text-xs font-medium bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300">All</button>
+            <button data-filter="pending" class="filter-pill px-3 py-1 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">Active</button>
+            <button data-filter="completed" class="filter-pill px-3 py-1 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">Done</button>
+            <button data-filter="faith" class="filter-pill px-3 py-1 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">🕊️ Faith</button>
+            <button data-filter="high" class="filter-pill px-3 py-1 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">🔥 High Priority</button>
+          </div>
+
+          <!-- Search Input -->
+          <div class="relative w-full sm:w-64">
+            <i data-lucide="search" class="absolute left-3 top-2.5 w-3.5 h-3.5 text-slate-400"></i>
+            <input type="text" id="input-search-tasks" placeholder="Search tasks..." 
+              class="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Task Items List -->
+      <div id="tasks-list-container" class="space-y-3">
+        <!-- Rendered by JS -->
+      </div>
+
+      <!-- Empty State -->
+      <div id="tasks-empty-state" class="hidden text-center py-12 glass-panel rounded-2xl">
+        <div class="w-12 h-12 mx-auto rounded-full bg-indigo-50 dark:bg-indigo-950/80 text-indigo-500 flex items-center justify-center mb-3">
+          <i data-lucide="check-check" class="w-6 h-6"></i>
+        </div>
+        <h4 class="font-semibold text-slate-800 dark:text-slate-200">No tasks found</h4>
+        <p class="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto mt-1">
+          You're all caught up! Add a new task above or schedule a scripture reading break.
+        </p>
+      </div>
+
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 2: SCRIPTURE PUBLISHING SCHEDULER -->
+    <!-- ========================================== -->
+    <section id="tab-content-scheduler" class="hidden space-y-6">
+      
+      <div class="glass-panel rounded-2xl p-6 space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-5">
+          <div>
+            <h2 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <i data-lucide="clock-3" class="w-5 h-5 text-indigo-600 dark:text-indigo-400"></i>
+              <span>Automated Scripture Publishing System</span>
+            </h2>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              Choose the exact time(s) of day you want God's Word to automatically publish to your screen.
+            </p>
+          </div>
+
+          <button id="btn-scheduler-test-now" class="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white shadow transition active:scale-95">
+            <i data-lucide="play" class="w-4 h-4"></i>
+            <span>Test Screen Alert Now</span>
+          </button>
+        </div>
+
+        <!-- Master Switch & Status Card -->
+        <div class="p-4 rounded-xl bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-200/60 dark:border-indigo-800/60 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center">
+              <i data-lucide="screen-share" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div class="font-semibold text-sm text-slate-900 dark:text-white">Screen Publishing Status</div>
+              <div id="scheduler-status-summary" class="text-xs text-indigo-700 dark:text-indigo-300 font-mono">Active • Next alert at --:--</div>
+            </div>
+          </div>
+
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" id="toggle-scheduler-enabled" class="sr-only peer" checked>
+            <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-indigo-600"></div>
+          </label>
+        </div>
+
+        <!-- Particular Time Configuration -->
+        <div class="space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              Scheduled Daily Alert Times
+            </h3>
+            <span class="text-xs text-slate-400">Add any time you want verses published</span>
+          </div>
+
+          <!-- Times List Tags -->
+          <div id="scheduled-times-container" class="flex flex-wrap gap-2.5 items-center">
+            <!-- Dynamically populated tags with delete button -->
+          </div>
+
+          <!-- Add New Time Input Group -->
+          <div class="flex items-center gap-2 max-w-sm pt-2">
+            <input type="time" id="input-new-publish-time" value="09:00" class="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <button id="btn-add-publish-time" class="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900 hover:bg-slate-700 transition flex items-center gap-1.5">
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+              <span>Add Scheduled Time</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Publishing Actions & Audio Preferences -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-slate-200 dark:border-slate-800">
+          
+          <div class="p-4 rounded-xl border border-slate-200 dark:border-slate-800 flex items-start gap-3">
+            <div class="p-2 rounded-lg bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400">
+              <i data-lucide="volume-2" class="w-4 h-4"></i>
+            </div>
+            <div class="flex-1">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold">Auto-Speak Verse</span>
+                <input type="checkbox" id="toggle-auto-speak" class="rounded text-indigo-600">
+              </div>
+              <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+                Reads audio version automatically when published to screen.
+              </p>
+            </div>
+          </div>
+
+          <div class="p-4 rounded-xl border border-slate-200 dark:border-slate-800 flex items-start gap-3">
+            <div class="p-2 rounded-lg bg-amber-50 dark:bg-amber-950 text-amber-600 dark:text-amber-400">
+              <i data-lucide="bell" class="w-4 h-4"></i>
+            </div>
+            <div class="flex-1">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold">Sacred Chime</span>
+                <input type="checkbox" id="toggle-sound-chime" class="rounded text-indigo-600" checked>
+              </div>
+              <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+                Plays gentle crystal chime when verse appears.
+              </p>
+            </div>
+          </div>
+
+          <div class="p-4 rounded-xl border border-slate-200 dark:border-slate-800 flex items-start gap-3">
+            <div class="p-2 rounded-lg bg-violet-50 dark:bg-violet-950 text-violet-600 dark:text-violet-400">
+              <i data-lucide="monitor" class="w-4 h-4"></i>
+            </div>
+            <div class="flex-1">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold">Desktop Notification</span>
+                <button id="btn-request-notifications" class="text-[11px] text-indigo-600 dark:text-indigo-400 font-semibold underline">
+                  Enable
+                </button>
+              </div>
+              <p id="notification-permission-status" class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+                Show system popup even if browser is in background.
+              </p>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 3: READ THROUGH ALL (FULL BIBLE READER) -->
+    <!-- ========================================== -->
+    <section id="tab-content-reader" class="hidden space-y-6">
+      
+      <div class="glass-panel rounded-2xl p-5 sm:p-6 space-y-6">
+        
+        <!-- Reader Navigation & Book/Chapter Selectors -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-5">
+          <div>
+            <h2 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <i data-lucide="book-open" class="w-5 h-5 text-indigo-600 dark:text-indigo-400"></i>
+              <span>Read Through All Scripture</span>
+            </h2>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              Listen to or read entire chapters in full context, verse by verse.
+            </p>
+          </div>
+
+          <!-- Chapter Select Controls -->
+          <div class="flex flex-wrap items-center gap-2.5">
+            <select id="reader-select-book" class="px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-medium focus:ring-2 focus:ring-indigo-500">
+              <!-- Dynamically populated with 66 books -->
+            </select>
+
+            <select id="reader-select-chapter" class="px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-medium focus:ring-2 focus:ring-indigo-500">
+              <!-- Dynamically populated with chapter numbers -->
+            </select>
+
+            <button id="btn-load-chapter" class="px-4 py-2 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white transition">
+              Load Chapter
+            </button>
+          </div>
+        </div>
+
+        <!-- Audio Player Bar for Entire Chapter -->
+        <div class="p-4 rounded-xl bg-slate-100/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <button id="btn-reader-play-audio" class="w-10 h-10 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white flex items-center justify-center shadow-md shadow-indigo-500/20 active:scale-95 transition">
+              <i data-lucide="play" id="reader-play-icon" class="w-5 h-5 fill-current"></i>
+            </button>
+            <div>
+              <div class="font-semibold text-xs text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                <span>Audio Narration: <span id="reader-audio-status">Ready</span></span>
+                <div id="reader-waveform" class="audio-wave paused hidden">
+                  <span class="audio-bar"></span>
+                  <span class="audio-bar"></span>
+                  <span class="audio-bar"></span>
+                  <span class="audio-bar"></span>
+                  <span class="audio-bar"></span>
+                </div>
+              </div>
+              <div id="reader-audio-verse-indicator" class="text-[11px] text-slate-500 dark:text-slate-400">Click play to listen to entire chapter</div>
+            </div>
+          </div>
+
+          <!-- Speed & Font Size Controls -->
+          <div class="flex items-center gap-3">
+            <div class="flex items-center gap-1.5 text-xs text-slate-500">
+              <label for="reader-speech-speed">Speed:</label>
+              <select id="reader-speech-speed" class="px-2 py-1 text-xs rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
+                <option value="0.8">0.8x (Gentle)</option>
+                <option value="0.95" selected>1.0x (Normal)</option>
+                <option value="1.15">1.2x (Brisk)</option>
+              </select>
+            </div>
+
+            <!-- Font Size -->
+            <div class="flex items-center border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden bg-white dark:bg-slate-900">
+              <button id="btn-font-smaller" title="Smaller text" class="px-2.5 py-1 text-xs hover:bg-slate-100 dark:hover:bg-slate-800">A-</button>
+              <button id="btn-font-larger" title="Larger text" class="px-2.5 py-1 text-xs hover:bg-slate-100 dark:hover:bg-slate-800 font-bold border-l border-slate-200 dark:border-slate-700">A+</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Full Chapter Content Display -->
+        <div class="space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 id="reader-chapter-title" class="font-display text-xl font-bold text-slate-900 dark:text-white">
+              Philippians Chapter 4
+            </h3>
+            <span id="reader-translation-badge" class="text-xs px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-mono">
+              World English Bible
+            </span>
+          </div>
+
+          <div id="reader-verses-container" class="font-scripture text-base sm:text-lg leading-relaxed text-slate-800 dark:text-slate-200 space-y-4 p-4 rounded-xl bg-white/50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800/60 max-h-[600px] overflow-y-auto">
+            <!-- Dynamically populated verses -->
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 4: SAVED VERSES & FAVORITES -->
+    <!-- ========================================== -->
+    <section id="tab-content-favorites" class="hidden space-y-6">
+      
+      <div class="glass-panel rounded-2xl p-6 space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
+          <div>
+            <h2 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <i data-lucide="bookmark" class="w-5 h-5 text-indigo-600 dark:text-indigo-400"></i>
+              <span>Saved Verses & Meditations</span>
+            </h2>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              Your collection of favorite scriptures saved from the publisher or reader.
+            </p>
+          </div>
+        </div>
+
+        <div id="favorites-list-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Dynamically populated saved cards -->
+        </div>
+
+        <div id="favorites-empty-state" class="hidden text-center py-12">
+          <i data-lucide="heart" class="w-8 h-8 mx-auto text-slate-300 dark:text-slate-700 mb-2"></i>
+          <h4 class="font-semibold text-slate-700 dark:text-slate-300">No saved verses yet</h4>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            Click the bookmark or heart icon on any verse to keep it in your personal treasury.
+          </p>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ======================================================== -->
+  <!-- AUTOMATIC SCREEN PUBLISH POPUP MODAL (THE MAIN EVENT)   -->
+  <!-- ======================================================== -->
+  <div id="modal-publish-screen" class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-950/70 backdrop-blur-md hidden transition-all duration-300">
+    
+    <div class="relative w-full max-w-2xl rounded-3xl p-6 sm:p-8 bg-gradient-to-b from-slate-900 via-indigo-950 to-slate-950 border border-indigo-500/40 text-white shadow-2xl publish-modal-active overflow-hidden">
+      
+      <!-- Top Decorative Accent -->
+      <div class="absolute -top-24 -left-24 w-48 h-48 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -bottom-24 -right-24 w-48 h-48 bg-violet-500/20 rounded-full blur-3xl pointer-events-none"></div>
+
+      <!-- Header with Time Badge & Close Button -->
+      <div class="flex items-center justify-between mb-5 relative z-10">
+        <div class="flex items-center gap-2">
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/30 text-indigo-300 border border-indigo-400/30">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5 text-indigo-300"></i>
+            <span>Published To Your Screen</span>
+          </span>
+          <span id="popup-category-badge" class="text-xs text-slate-300 font-medium">
+            Peace & Comfort
+          </span>
+        </div>
+
+        <button id="btn-close-publish-modal" title="Dismiss" class="p-1.5 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Scripture Passage -->
+      <div class="space-y-4 my-6 text-center sm:text-left relative z-10">
+        <p id="popup-verse-text" class="font-scripture text-xl sm:text-2xl leading-relaxed text-indigo-50 font-normal italic">
+          "In nothing be anxious, but in everything, by prayer and petition with thanksgiving, let your requests be made known to God..."
+        </p>
+        <div class="flex items-center justify-center sm:justify-start gap-2">
+          <span id="popup-verse-reference" class="font-display font-semibold text-amber-300 text-lg sm:text-xl">
+            Philippians 4:6-7
+          </span>
+          <span class="text-xs text-indigo-300/80 font-mono">(WEB)</span>
+        </div>
+        <p id="popup-verse-reflection" class="text-xs sm:text-sm text-slate-300 italic pt-2 border-t border-indigo-800/50">
+          "Take a deep breath and surrender what you cannot control. Bring your to-do list before God with thanksgiving."
+        </p>
+      </div>
+
+      <!-- Audio Narration Control inside Popup -->
+      <div class="my-5 p-3.5 rounded-2xl bg-indigo-900/40 border border-indigo-700/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 relative z-10">
+        <div class="flex items-center gap-3">
+          <button id="btn-popup-toggle-audio" class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-violet-500 hover:from-indigo-400 hover:to-violet-400 text-white flex items-center justify-center shadow-lg shadow-indigo-500/30 active:scale-95 transition">
+            <i data-lucide="volume-2" id="popup-audio-icon" class="w-5 h-5"></i>
+          </button>
+          <div>
+            <div class="text-xs font-semibold text-white flex items-center gap-2">
+              <span id="popup-audio-status-label">Listen to Audio Version</span>
+              <div id="popup-waveform" class="audio-wave paused hidden">
+                <span class="audio-bar"></span>
+                <span class="audio-bar"></span>
+                <span class="audio-bar"></span>
+                <span class="audio-bar"></span>
+                <span class="audio-bar"></span>
+              </div>
+            </div>
+            <p class="text-[11px] text-indigo-300">Natural voice narration with calm cadence</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button id="btn-popup-ambient" class="text-xs px-2.5 py-1.5 rounded-lg border border-indigo-700/60 text-indigo-200 hover:bg-indigo-800/40 flex items-center gap-1.5 transition">
+            <i data-lucide="music" class="w-3.5 h-3.5"></i>
+            <span id="popup-ambient-label">Ambient: Off</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Action Footer Buttons -->
+      <div class="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-indigo-900/80 relative z-10">
+        <div class="flex items-center gap-2">
+          <!-- Read Through All / Full Chapter -->
+          <button id="btn-popup-read-full" class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold bg-white text-indigo-950 hover:bg-indigo-50 shadow transition active:scale-95">
+            <i data-lucide="book-open" class="w-4 h-4 text-indigo-600"></i>
+            <span>Read Through All (Full Chapter)</span>
+          </button>
+
+          <!-- Add as To-Do Task -->
+          <button id="btn-popup-add-task" class="flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-medium bg-indigo-900/60 hover:bg-indigo-800/80 text-indigo-200 border border-indigo-700/50 transition">
+            <i data-lucide="plus-circle" class="w-4 h-4"></i>
+            <span>Add to Tasks</span>
+          </button>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <!-- Favorite -->
+          <button id="btn-popup-bookmark" class="p-2.5 rounded-xl bg-indigo-900/60 hover:bg-indigo-800/80 text-indigo-200 border border-indigo-700/50 transition" title="Save Verse">
+            <i data-lucide="bookmark" id="popup-bookmark-icon" class="w-4 h-4"></i>
+          </button>
+
+          <!-- Dismiss -->
+          <button id="btn-popup-dismiss" class="px-4 py-2.5 rounded-xl text-xs font-medium text-slate-300 hover:text-white transition">
+            Done Reflecting
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- SETTINGS MODAL                                           -->
+  <!-- ======================================================== -->
+  <div id="modal-settings" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm hidden">
+    <div class="w-full max-w-lg glass-panel rounded-2xl p-6 space-y-5 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-2xl border border-slate-200 dark:border-slate-800">
+      
+      <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+        <h3 class="font-bold text-lg flex items-center gap-2">
+          <i data-lucide="sliders" class="w-5 h-5 text-indigo-600"></i>
+          <span>Scripture & Audio Preferences</span>
+        </h3>
+        <button id="btn-close-settings" class="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="space-y-4 text-xs sm:text-sm">
+        
+        <!-- Voice Selection -->
+        <div class="space-y-1.5">
+          <label class="font-semibold block">Reading Voice</label>
+          <select id="setting-voice-select" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs">
+            <option>Loading system voices...</option>
+          </select>
+        </div>
+
+        <!-- Narration Speed -->
+        <div class="space-y-1.5">
+          <div class="flex justify-between">
+            <label class="font-semibold">Speech Rate</label>
+            <span id="label-speech-rate" class="text-xs text-indigo-600 font-mono">0.95x</span>
+          </div>
+          <input type="range" id="setting-speech-rate" min="0.7" max="1.4" step="0.05" value="0.95" class="w-full accent-indigo-600">
+        </div>
+
+        <!-- Ambient Pad Volume -->
+        <div class="space-y-1.5">
+          <div class="flex justify-between">
+            <label class="font-semibold">Ambient Peace Music Volume</label>
+            <span id="label-ambient-vol" class="text-xs text-indigo-600 font-mono">25%</span>
+          </div>
+          <input type="range" id="setting-ambient-vol" min="0" max="1" step="0.05" value="0.25" class="w-full accent-indigo-600">
+        </div>
+
+        <!-- Reset & Demo Data -->
+        <div class="pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
+          <button id="btn-seed-sample-tasks" class="text-xs text-indigo-600 dark:text-indigo-400 font-medium underline">
+            Load sample faith & daily tasks
+          </button>
+          <button id="btn-save-settings" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-xs">
+            Save & Close
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Core App Scripts -->
+  <script type="module" src="app.js"></script>
+</body>
+</html>
