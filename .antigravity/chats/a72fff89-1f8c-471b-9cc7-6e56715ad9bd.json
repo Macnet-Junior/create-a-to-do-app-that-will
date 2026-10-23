@@ -4,5 +4,18 @@
   "createdAt": "2026-10-23T23:27:02.203Z",
   "filename": "a72fff89-1f8c-471b-9cc7-6e56715ad9bd.json",
   "geminiStarted": false,
-  "messages": []
+  "messages": [
+    {
+      "id": "ef130868-2697-4536-b685-0cb3e03c3a2b",
+      "role": "user",
+      "content": "Create a to-do app that will automatically publish bible verses to my screen and with the option to listen an audio version or read through all of it, on a particular time I set,",
+      "status": "pending",
+      "model": "gemini-3.8-flash-high",
+      "client_type": "gemini-bridge",
+      "parent_message_id": null,
+      "created_at": "2026-10-23T23:29:44.626Z",
+      "sender": "ios",
+      "is_cancelled": false
+    }
+  ]
 }
