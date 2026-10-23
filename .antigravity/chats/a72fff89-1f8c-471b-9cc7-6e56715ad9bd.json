@@ -21,11 +21,23 @@
       "id": "509696b2-89f6-4021-bbd4-510fc27d2abc",
       "role": "user",
       "content": "Create a to-do app that will automatically publish bible verses to my screen and with the option to listen an audio version or read through all of it, on a particular time I set,",
-      "status": "pending",
+      "status": "cancelled",
       "model": "gemini-3.8-flash-high",
       "client_type": "gemini-bridge",
       "parent_message_id": null,
       "created_at": "2026-10-23T23:35:48.352Z",
+      "sender": "ios",
+      "is_cancelled": true
+    },
+    {
+      "id": "5d25dc8c-dbf3-4ae1-a7ae-57c7b5f91b8d",
+      "role": "user",
+      "content": "Create a to-do app that will automatically publish bible verses to my screen and with the option to listen an audio version or read through all of it, on a particular time I set,",
+      "status": "pending",
+      "model": "gemini-3.8-flash-high",
+      "client_type": "gemini-bridge",
+      "parent_message_id": null,
+      "created_at": "2026-10-23T23:36:34.798Z",
       "sender": "ios",
       "is_cancelled": false
     }
