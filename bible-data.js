@@ -247,7 +247,7 @@ export const DAILY_VERSES = [
     chapter: 4,
     startVerse: 8,
     endVerse: 8,
-    category: "Evening Peace",
+    category: "Evening Rest",
     theme: "Serene Sleep",
     text: "In peace I will both lay myself down and sleep, for you, Yahweh, alone make me dwell in safety.",
     reflection: "As night falls, release today's completed and incomplete tasks into the Father's keeping."
@@ -311,6 +311,126 @@ export const DAILY_VERSES = [
     theme: "Shelter",
     text: "He who dwells in the secret place of the Most High will rest in the shadow of the Almighty. I will say of Yahweh, “He is my refuge and my fortress; my God, in whom I trust.” For he will deliver you... He will cover you with his feathers. Under his wings you will take refuge.",
     reflection: "Abide under the shadow of the Almighty. You are protected and held secure."
+  },
+  {
+    id: "v-phil-4-13",
+    reference: "Philippians 4:13",
+    book: "Philippians",
+    chapter: 4,
+    startVerse: 13,
+    endVerse: 13,
+    category: "Strength & Energy",
+    theme: "Empowerment",
+    text: "I can do all things through Christ, who strengthens me.",
+    reflection: "No matter how daunting the project or conversation ahead, Christ supplies supernatural endurance."
+  },
+  {
+    id: "v-mat-6-33-34",
+    reference: "Matthew 6:33-34",
+    book: "Matthew",
+    chapter: 6,
+    startVerse: 33,
+    endVerse: 34,
+    category: "Wisdom & Purpose",
+    theme: "First Things First",
+    text: "“But seek first God's Kingdom and his righteousness; and all these things will be given to you as well. Therefore don't be anxious for tomorrow, for tomorrow will be anxious for itself. Each day's own evil is sufficient.”",
+    reflection: "Focus fully on being faithful today. Tomorrow's demands have their own grace waiting."
+  },
+  {
+    id: "v-isa-26-3",
+    reference: "Isaiah 26:3",
+    book: "Isaiah",
+    chapter: 26,
+    startVerse: 3,
+    endVerse: 3,
+    category: "Peace & Comfort",
+    theme: "Perfect Peace",
+    text: "You will keep him in perfect peace, whose mind is stayed on you; because he trusts in you.",
+    reflection: "Anchor your thoughts on His unchanging character rather than fluctuating circumstances."
+  },
+  {
+    id: "v-2ti-1-7",
+    reference: "2 Timothy 1:7",
+    book: "2 Timothy",
+    chapter: 1,
+    startVerse: 7,
+    endVerse: 7,
+    category: "Strength & Energy",
+    theme: "Sound Mind",
+    text: "For God didn't give us a spirit of fear, but of power, love, and self-control.",
+    reflection: "Reject panic and fear. Operate out of divine power, calm love, and a disciplined mind."
+  },
+  {
+    id: "v-pro-16-3",
+    reference: "Proverbs 16:3",
+    book: "Proverbs",
+    chapter: 16,
+    startVerse: 3,
+    endVerse: 3,
+    category: "Work & Productivity",
+    theme: "Commitment",
+    text: "Commit your deeds to Yahweh, and your plans shall succeed.",
+    reflection: "Dedicate your daily task checklist as an offering of service to the Lord."
+  },
+  {
+    id: "v-heb-11-1",
+    reference: "Hebrews 11:1",
+    book: "Hebrews",
+    chapter: 11,
+    startVerse: 1,
+    endVerse: 1,
+    category: "Faith & Trust",
+    theme: "Assurance",
+    text: "Now faith is assurance of things hoped for, proof of things not seen.",
+    reflection: "Trust the invisible hand of God even when the visible path feels uncertain."
+  },
+  {
+    id: "v-mic-6-8",
+    reference: "Micah 6:8",
+    book: "Micah",
+    chapter: 6,
+    startVerse: 8,
+    endVerse: 8,
+    category: "Wisdom & Purpose",
+    theme: "Righteous Living",
+    text: "He has shown you, O man, what is good. What does Yahweh require of you, but to act justly, to love mercy, and to walk humbly with your God?",
+    reflection: "Simplicity is found in doing justice, showing mercy, and walking with humble hearts."
+  },
+  {
+    id: "v-psa-103-1-4",
+    reference: "Psalm 103:1-4",
+    book: "Psalms",
+    chapter: 103,
+    startVerse: 1,
+    endVerse: 4,
+    category: "Morning Devotion",
+    theme: "Praise & Thanksgiving",
+    text: "Praise Yahweh, my soul! All that is within me, praise his holy name! Praise Yahweh, my soul, and don't forget all his benefits; who forgives all your sins; who heals all your diseases; who redeems your life from destruction.",
+    reflection: "Begin your morning by recounting benefits and blessings rather than listing complaints."
+  },
+  {
+    id: "v-rom-12-2",
+    reference: "Romans 12:2",
+    book: "Romans",
+    chapter: 12,
+    startVerse: 2,
+    endVerse: 2,
+    category: "Wisdom & Purpose",
+    theme: "Transformation",
+    text: "Don't be conformed to this world, but be transformed by the renewing of your mind, so that you may prove what is the good, well-pleasing, and perfect will of God.",
+    reflection: "Let Scripture renew your perspective when world pressures try to squeeze you into hurry."
+  },
+  {
+    id: "v-psa-37-4-5",
+    reference: "Psalm 37:4-5",
+    book: "Psalms",
+    chapter: 37,
+    startVerse: 4,
+    endVerse: 5,
+    category: "Hope & Future",
+    theme: "Delight",
+    text: "Delight yourself also in Yahweh, and he will give you the desires of your heart. Commit your way to Yahweh. Trust also in him, and he will do this.",
+    reflection: "When you delight in God, your desires align with His good purposes for your life."
   }
 ];
 
@@ -318,6 +438,20 @@ export const DAILY_VERSES = [
 export const PRELOADED_CHAPTERS = {
   "Psalms 23": {
     reference: "Psalms 23",
+    book: "Psalms",
+    chapter: 23,
+    title: "The Lord is My Shepherd",
+    verses: [
+      { verse: 1, text: "Yahweh is my shepherd: I shall lack nothing." },
+      { verse: 2, text: "He makes me lie down in green pastures. He leads me beside still waters." },
+      { verse: 3, text: "He restores my soul. He guides me in the paths of righteousness for his name's sake." },
+      { verse: 4, text: "Even though I walk through the valley of the shadow of death, I will fear no evil, for you are with me. Your rod and your staff, they comfort me." },
+      { verse: 5, text: "You prepare a table before me in the presence of my enemies. You have anointed my head with oil. My cup runs over." },
+      { verse: 6, text: "Surely goodness and loving kindness will follow me all the days of my life, and I will dwell in Yahweh's house forever." }
+    ]
+  },
+  "Psalm 23": {
+    reference: "Psalm 23",
     book: "Psalms",
     chapter: 23,
     title: "The Lord is My Shepherd",
@@ -400,8 +534,29 @@ export const PRELOADED_CHAPTERS = {
       { verse: 39, text: "nor height, nor depth, nor any other created thing, will be able to separate us from the love of God, which is in Christ Jesus our Lord." }
     ]
   },
-  "Psalm 91": {
+  "Psalms 91": {
     reference: "Psalms 91",
+    book: "Psalms",
+    chapter: 91,
+    title: "Under the Shadow of the Almighty",
+    verses: [
+      { verse: 1, text: "He who dwells in the secret place of the Most High will rest in the shadow of the Almighty." },
+      { verse: 2, text: "I will say of Yahweh, “He is my refuge and my fortress; my God, in whom I trust.”" },
+      { verse: 3, text: "For he will deliver you from the snare of the fowler, and from the deadly pestilence." },
+      { verse: 4, text: "He will cover you with his feathers. Under his wings you will take refuge. His faithfulness is your shield and rampart." },
+      { verse: 5, text: "You shall not be afraid of the terror by night, nor of the arrow that flies by day;" },
+      { verse: 6, text: "nor of the pestilence that walks in darkness, nor of the destruction that wastes at noonday." },
+      { verse: 9, text: "Because you have made Yahweh your refuge, and the Most High your dwelling place," },
+      { verse: 10, text: "no evil shall happen to you, neither shall any plague come near your tent." },
+      { verse: 11, text: "For he will put his angels in charge of you, to guard you in all your ways." },
+      { verse: 12, text: "They will bear you up in their hands, so that you won't dash your foot against a stone." },
+      { verse: 14, text: "“Because he has set his love on me, therefore I will deliver him. I will set him on high, because he has known my name.”" },
+      { verse: 15, text: "“He will call on me, and I will answer him. I will be with him in trouble. I will deliver him, and honor him.”" },
+      { verse: 16, text: "“With long life I will satisfy him, and show him my salvation.”" }
+    ]
+  },
+  "Psalm 91": {
+    reference: "Psalm 91",
     book: "Psalms",
     chapter: 91,
     title: "Under the Shadow of the Almighty",
@@ -440,6 +595,69 @@ export const PRELOADED_CHAPTERS = {
       { verse: 13, text: "Happy is the man who finds wisdom, the man who gets understanding." },
       { verse: 24, text: "When you lie down, you will not be afraid. Yes, you will lie down, and your sleep will be sweet." },
       { verse: 26, text: "For Yahweh will be your confidence, and will keep your foot from being taken." }
+    ]
+  },
+  "John 14": {
+    reference: "John 14",
+    book: "John",
+    chapter: 14,
+    title: "The Way, the Truth, and the Life",
+    verses: [
+      { verse: 1, text: "“Don't let your heart be troubled. Believe in God. Believe also in me.”" },
+      { verse: 2, text: "“In my Father's house are many homes. If it weren't so, I would have told you. I am going to prepare a place for you.”" },
+      { verse: 3, text: "“If I go and prepare a place for you, I will come again, and will receive you to myself; that where I am, you may be there also.”" },
+      { verse: 6, text: "Jesus said to him, “I am the way, the truth, and the life. No one comes to the Father, except through me.”" },
+      { verse: 15, text: "“If you love me, keep my commandments.”" },
+      { verse: 16, text: "“I will pray to the Father, and he will give you another Counselor, that he may be with you forever:”" },
+      { verse: 17, text: "“the Spirit of truth, whom the world can't receive; for it doesn't see him, neither knows him. You know him, for he lives with you, and will be in you.”" },
+      { verse: 27, text: "“Peace I leave with you. My peace I give to you; not as the world gives, give I to you. Don't let your heart be troubled, neither let it be fearful.”" }
+    ]
+  },
+  "Psalms 121": {
+    reference: "Psalms 121",
+    book: "Psalms",
+    chapter: 121,
+    title: "My Help Comes from the Lord",
+    verses: [
+      { verse: 1, text: "I will lift up my eyes to the hills. Where does my help come from?" },
+      { verse: 2, text: "My help comes from Yahweh, who made heaven and earth." },
+      { verse: 3, text: "He will not allow your foot to be moved. He who keeps you will not slumber." },
+      { verse: 4, text: "Behold, he who keeps Israel will neither slumber nor sleep." },
+      { verse: 5, text: "Yahweh is your keeper. Yahweh is your shade on your right hand." },
+      { verse: 6, text: "The sun will not strike you by day, nor the moon by night." },
+      { verse: 7, text: "Yahweh will keep you from all evil. He will keep your soul." },
+      { verse: 8, text: "Yahweh will keep your going out and your coming in, from this time forward, and forever more." }
+    ]
+  },
+  "Psalm 121": {
+    reference: "Psalm 121",
+    book: "Psalms",
+    chapter: 121,
+    title: "My Help Comes from the Lord",
+    verses: [
+      { verse: 1, text: "I will lift up my eyes to the hills. Where does my help come from?" },
+      { verse: 2, text: "My help comes from Yahweh, who made heaven and earth." },
+      { verse: 3, text: "He will not allow your foot to be moved. He who keeps you will not slumber." },
+      { verse: 4, text: "Behold, he who keeps Israel will neither slumber nor sleep." },
+      { verse: 5, text: "Yahweh is your keeper. Yahweh is your shade on your right hand." },
+      { verse: 6, text: "The sun will not strike you by day, nor the moon by night." },
+      { verse: 7, text: "Yahweh will keep you from all evil. He will keep your soul." },
+      { verse: 8, text: "Yahweh will keep your going out and your coming in, from this time forward, and forever more." }
+    ]
+  },
+  "Isaiah 40": {
+    reference: "Isaiah 40",
+    book: "Isaiah",
+    chapter: 40,
+    title: "Hope in the Lord Renews Strength",
+    verses: [
+      { verse: 1, text: "“Comfort, comfort my people,” says your God." },
+      { verse: 8, text: "The grass withers, the flower fades; but the word of our God stands forever." },
+      { verse: 11, text: "He will feed his flock like a shepherd. He will gather the lambs in his arm, and carry them in his bosom." },
+      { verse: 28, text: "Haven't you known? Haven't you heard? The everlasting God, Yahweh, the Creator of the ends of the earth, doesn't faint. He isn't weary. His understanding is unsearchable." },
+      { verse: 29, text: "He gives power to the weak. He increases the strength of him who has no might." },
+      { verse: 30, text: "Even the youths faint and get weary, and the young men utterly fall;" },
+      { verse: 31, text: "but those who wait for Yahweh will renew their strength. They will mount up with wings like eagles. They will run, and not be weary. They will walk, and not faint." }
     ]
   }
 };
