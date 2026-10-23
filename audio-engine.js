@@ -2,7 +2,7 @@
 
 class AudioEngine {
   constructor() {
-    this.synth = window.speechSynthesis;
+    this.synth = typeof window !== 'undefined' ? window.speechSynthesis : null;
     this.currentUtterance = null;
     this.isPlayingTTS = false;
     this.isPausedTTS = false;
@@ -11,6 +11,7 @@ class AudioEngine {
     this.rate = 0.95; // slightly relaxed natural pace
     this.pitch = 1.0;
     this.volume = 1.0;
+    this.keepAliveTimer = null;
 
     // Web Audio Context for Chimes & Ambient pads
     this.audioCtx = null;
@@ -24,20 +25,43 @@ class AudioEngine {
     this.boundaryListeners = new Set();
 
     this.initVoices();
+    this.setupKeepAlive();
+  }
+
+  setupKeepAlive() {
+    // Chrome SpeechSynthesis bug workaround: keeps speech synthesis active during longer passages
+    if (typeof window !== 'undefined') {
+      setInterval(() => {
+        if (this.synth && this.isPlayingTTS && !this.isPausedTTS) {
+          try {
+            this.synth.pause();
+            this.synth.resume();
+          } catch (_) {}
+        }
+      }, 10000);
+    }
   }
 
   initVoices() {
     if (!this.synth) return;
     const updateVoices = () => {
-      this.voices = this.synth.getVoices().filter(v => v.lang.startsWith("en"));
-      if (!this.selectedVoice && this.voices.length > 0) {
-        // Prefer natural / premium English voices
-        const preferred = this.voices.find(v => 
-          /natural|google|samantha|daniel|karen|moira|serena|oliver|arthur/i.test(v.name)
-        );
-        this.selectedVoice = preferred || this.voices[0];
+      try {
+        const allVoices = this.synth.getVoices();
+        this.voices = allVoices.filter(v => v.lang.startsWith("en"));
+        if (this.voices.length === 0) {
+          this.voices = allVoices; // fallback to whatever voices are available
+        }
+        if (!this.selectedVoice && this.voices.length > 0) {
+          // Prefer natural / premium English voices
+          const preferred = this.voices.find(v => 
+            /natural|neural|google|samantha|daniel|karen|moira|serena|oliver|arthur|guy|aria/i.test(v.name)
+          );
+          this.selectedVoice = preferred || this.voices[0];
+        }
+        this.notifyStatus();
+      } catch (e) {
+        console.warn("Could not retrieve voices:", e);
       }
-      this.notifyStatus();
     };
 
     updateVoices();
@@ -47,6 +71,7 @@ class AudioEngine {
   }
 
   ensureAudioContext() {
+    if (typeof window === 'undefined') return null;
     if (!this.audioCtx) {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
       if (AudioCtx) {
@@ -111,14 +136,14 @@ class AudioEngine {
 
       this.ambientGain = ctx.createGain();
       this.ambientGain.gain.setValueAtTime(0.001, ctx.currentTime);
-      this.ambientGain.gain.linearRampToValueAtTime(this.ambientVolume, ctx.currentTime + 3);
+      this.ambientGain.gain.linearRampToValueAtTime(this.ambientVolume, ctx.currentTime + 2.5);
       this.ambientGain.connect(ctx.destination);
 
       // Low pass filter for soft warm celestial tone
       const filter = ctx.createBiquadFilter();
       filter.type = "lowpass";
-      filter.frequency.setValueAtTime(380, ctx.currentTime);
-      filter.Q.setValueAtTime(2.0, ctx.currentTime);
+      filter.frequency.setValueAtTime(360, ctx.currentTime);
+      filter.Q.setValueAtTime(1.8, ctx.currentTime);
       filter.connect(this.ambientGain);
 
       // Harmonic tones: D3, A3, F#4, C#5
@@ -132,7 +157,7 @@ class AudioEngine {
         osc.detune.setValueAtTime((i - 1.5) * 4, ctx.currentTime);
 
         const oscGain = ctx.createGain();
-        oscGain.gain.value = 0.25;
+        oscGain.gain.value = 0.22;
         osc.connect(oscGain);
         oscGain.connect(filter);
         osc.start();
@@ -150,7 +175,7 @@ class AudioEngine {
     if (!this.isAmbientPlaying) return;
     try {
       if (this.ambientGain && this.audioCtx) {
-        this.ambientGain.gain.linearRampToValueAtTime(0.0001, this.audioCtx.currentTime + 1.5);
+        this.ambientGain.gain.linearRampToValueAtTime(0.0001, this.audioCtx.currentTime + 1.2);
       }
       setTimeout(() => {
         this.ambientOscillators.forEach(osc => {
@@ -159,7 +184,7 @@ class AudioEngine {
         this.ambientOscillators = [];
         this.isAmbientPlaying = false;
         this.notifyStatus();
-      }, 1600);
+      }, 1300);
     } catch (e) {
       this.isAmbientPlaying = false;
       this.notifyStatus();
@@ -177,13 +202,14 @@ class AudioEngine {
   speak(text, options = {}) {
     if (!this.synth) {
       console.warn("SpeechSynthesis not supported on this browser.");
+      if (options.onError) options.onError(new Error("Speech synthesis not supported"));
       return;
     }
 
     this.stopTTS();
 
     // Clean text of extra markdown/newlines
-    const cleanText = text.replace(/[\n\r]+/g, " ").trim();
+    const cleanText = text.replace(/[\n\r]+/g, " ").replace(/\s{2,}/g, " ").trim();
     if (!cleanText) return;
 
     const utterance = new SpeechSynthesisUtterance(cleanText);
@@ -212,7 +238,7 @@ class AudioEngine {
     };
 
     utterance.onerror = (err) => {
-      console.warn("TTS Error:", err);
+      console.warn("TTS Error/Canceled:", err);
       this.isPlayingTTS = false;
       this.isPausedTTS = false;
       this.currentUtterance = null;
@@ -225,7 +251,6 @@ class AudioEngine {
       if (options.onBoundary) options.onBoundary(e);
     };
 
-    // Ensure audio context is ready
     this.ensureAudioContext();
 
     this.synth.speak(utterance);
@@ -278,7 +303,10 @@ class AudioEngine {
 
   setVoice(voiceName) {
     const v = this.voices.find(item => item.name === voiceName);
-    if (v) this.selectedVoice = v;
+    if (v) {
+      this.selectedVoice = v;
+      this.notifyStatus();
+    }
   }
 
   onStatusChange(cb) {
@@ -300,7 +328,9 @@ class AudioEngine {
       selectedVoice: this.selectedVoice,
       rate: this.rate
     };
-    this.statusListeners.forEach(cb => cb(state));
+    this.statusListeners.forEach(cb => {
+      try { cb(state); } catch (_) {}
+    });
   }
 }
 

@@ -10,7 +10,8 @@ export class VerseScheduler {
       enabled: true,
       mode: 'times', // 'times' or 'interval'
       times: ['08:00', '13:00', '20:00'], // default morning, noon, evening
-      intervalHours: 3, // for interval mode
+      intervalHours: 2, // for interval mode (hours)
+      intervalMinutes: 120, // total minutes for interval
       autoSpeak: false,
       playChime: true,
       desktopNotifications: false,
@@ -45,9 +46,9 @@ export class VerseScheduler {
 
   init() {
     this.recalculateNextPublish();
-    // Check every 10 seconds for trigger condition
+    // Check every second for snappy prompt execution on the minute
     if (this.timerInterval) clearInterval(this.timerInterval);
-    this.timerInterval = setInterval(() => this.checkSchedule(), 10000);
+    this.timerInterval = setInterval(() => this.checkSchedule(), 1000);
   }
 
   // Calculate the next date/time the verse will be published
@@ -60,8 +61,11 @@ export class VerseScheduler {
     const now = new Date();
     
     if (this.config.mode === 'interval') {
-      const msInterval = (this.config.intervalHours || 3) * 60 * 60 * 1000;
-      this.nextPublishDate = new Date(now.getTime() + msInterval);
+      const mins = this.config.intervalMinutes || (this.config.intervalHours * 60) || 120;
+      // If we don't have a next date or it's in the past, set it from now
+      if (!this.nextPublishDate || this.nextPublishDate.getTime() <= now.getTime()) {
+        this.nextPublishDate = new Date(now.getTime() + mins * 60 * 1000);
+      }
       return;
     }
 
@@ -73,13 +77,17 @@ export class VerseScheduler {
 
     const upcomingCandidates = [];
 
-    // Check today and tomorrow for all configured times
-    [0, 1].forEach(dayOffset => {
+    // Check today, tomorrow, and day after for all configured times
+    [0, 1, 2].forEach(dayOffset => {
       this.config.times.forEach(tStr => {
-        const [hours, minutes] = tStr.split(':').map(Number);
-        const target = new Date(now.getFullYear(), now.getMonth(), now.getDate() + dayOffset, hours, minutes, 0, 0);
-        if (target.getTime() > now.getTime()) {
-          upcomingCandidates.push(target);
+        const parts = tStr.split(':').map(Number);
+        if (parts.length >= 2) {
+          const hours = parts[0];
+          const minutes = parts[1];
+          const target = new Date(now.getFullYear(), now.getMonth(), now.getDate() + dayOffset, hours, minutes, 0, 0);
+          if (target.getTime() > now.getTime()) {
+            upcomingCandidates.push(target);
+          }
         }
       });
     });
@@ -105,7 +113,7 @@ export class VerseScheduler {
     let shouldTrigger = false;
 
     if (this.config.mode === 'times') {
-      if (this.config.times.includes(currentTimeStr)) {
+      if (this.config.times && this.config.times.includes(currentTimeStr)) {
         shouldTrigger = true;
       }
     } else if (this.config.mode === 'interval') {
@@ -117,7 +125,11 @@ export class VerseScheduler {
     if (shouldTrigger) {
       this.config.lastTriggerDateKey = todayDateKey;
       this.triggerPublish({ reason: 'scheduled', timeStr: currentTimeStr });
-      this.recalculateNextPublish();
+      if (this.config.mode === 'interval') {
+        const mins = this.config.intervalMinutes || (this.config.intervalHours * 60) || 120;
+        this.nextPublishDate = new Date(Date.now() + mins * 60 * 1000);
+      }
+      this.saveSettings();
     }
   }
 
@@ -125,10 +137,13 @@ export class VerseScheduler {
     // Send browser desktop notification if enabled
     if (this.config.desktopNotifications && "Notification" in window && Notification.permission === "granted") {
       try {
-        new Notification("🕊️ Daily Scripture Published", {
+        const notif = new Notification("🕊️ Daily Scripture Published", {
           body: "A new Bible verse has arrived for your screen. Click to read and reflect.",
           icon: "https://api.iconify.design/lucide:book-open.svg?color=%234f46e5"
         });
+        notif.onclick = () => {
+          window.focus();
+        };
       } catch (e) {
         console.warn("Desktop notification error:", e);
       }
@@ -138,12 +153,31 @@ export class VerseScheduler {
     this.onPublish(metadata);
   }
 
+  // Quick helper to schedule a time N minutes from now
+  scheduleTimeInMinutes(minutesAhead = 1) {
+    const target = new Date(Date.now() + minutesAhead * 60 * 1000);
+    const hh = String(target.getHours()).padStart(2, '0');
+    const mm = String(target.getMinutes()).padStart(2, '0');
+    const timeStr = `${hh}:${mm}`;
+
+    if (!this.config.times.includes(timeStr)) {
+      this.config.times.push(timeStr);
+      this.config.times.sort();
+    }
+    this.config.mode = 'times';
+    this.config.enabled = true;
+    this.saveSettings();
+    return timeStr;
+  }
+
   getTimeUntilNextPublish() {
     if (!this.config.enabled || !this.nextPublishDate) {
       return null;
     }
     const diffMs = this.nextPublishDate.getTime() - Date.now();
-    if (diffMs <= 0) return { hours: 0, minutes: 0, seconds: 0, formatted: "Moments away" };
+    if (diffMs <= 0) {
+      return { hours: 0, minutes: 0, seconds: 0, formatted: "Moments away", targetDate: this.nextPublishDate };
+    }
 
     const totalSeconds = Math.floor(diffMs / 1000);
     const hours = Math.floor(totalSeconds / 3600);
@@ -151,7 +185,7 @@ export class VerseScheduler {
     const seconds = totalSeconds % 60;
 
     const formattedTime = this.nextPublishDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    const formatted = `${hours}h ${minutes}m ${seconds}s (at ${formattedTime})`;
+    const formatted = `${hours > 0 ? hours + 'h ' : ''}${minutes}m ${String(seconds).padStart(2, '0')}s (at ${formattedTime})`;
 
     return { hours, minutes, seconds, formatted, targetDate: this.nextPublishDate };
   }
