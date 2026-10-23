@@ -61,8 +61,8 @@
           </div>
         </div>
 
-        <!-- Next Verse Countdown Banner -->
-        <div id="header-countdown-container" class="hidden md:flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-indigo-50/80 dark:bg-indigo-950/60 border border-indigo-200/70 dark:border-indigo-800/60 text-xs text-indigo-900 dark:text-indigo-200">
+        <!-- Next Verse Countdown Banner (Clickable to jump to Scheduler) -->
+        <div id="header-countdown-container" title="Click to view or edit publishing schedule" class="cursor-pointer hidden md:flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-indigo-50/80 dark:bg-indigo-950/60 border border-indigo-200/70 dark:border-indigo-800/60 text-xs text-indigo-900 dark:text-indigo-200 hover:border-indigo-400 transition">
           <i data-lucide="clock" class="w-3.5 h-3.5 text-indigo-500 animate-pulse"></i>
           <span class="font-medium text-slate-500 dark:text-slate-400">Next Verse in:</span>
           <span id="header-countdown-text" class="font-mono font-semibold text-indigo-600 dark:text-indigo-400">Calculating...</span>
@@ -87,7 +87,7 @@
           </button>
 
           <!-- Schedule Settings Modal Trigger -->
-          <button id="btn-open-settings" title="Configure Scripture Publishing Schedule"
+          <button id="btn-open-settings" title="Configure Scripture Publishing Schedule & Audio"
             class="p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
             <i data-lucide="settings" class="w-4 h-4"></i>
           </button>
@@ -162,7 +162,7 @@
 
           <!-- Audio & Reader Controls on Banner -->
           <div class="flex flex-wrap items-center gap-2 shrink-0">
-            <button id="btn-listen-daily-verse" class="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/80 shadow-sm hover:shadow transition">
+            <button id="btn-listen-daily-verse" title="Listen to verse audio narration" class="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/80 shadow-sm hover:shadow transition">
               <i data-lucide="volume-2" class="w-4 h-4"></i>
               <span id="btn-listen-daily-label">Listen Audio</span>
               <div id="daily-verse-waveform" class="audio-wave paused hidden">
@@ -174,7 +174,7 @@
               </div>
             </button>
 
-            <button id="btn-read-daily-context" class="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm transition">
+            <button id="btn-read-daily-context" title="Open chapter in Read Through All" class="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm transition">
               <i data-lucide="book-open" class="w-4 h-4"></i>
               <span>Read Full Chapter</span>
             </button>
@@ -182,50 +182,65 @@
             <button id="btn-favorite-daily-verse" title="Save Verse to Favorites" class="p-2 rounded-xl bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:text-rose-500 dark:hover:text-rose-400 transition">
               <i data-lucide="heart" class="w-4 h-4"></i>
             </button>
+
+            <button id="btn-shuffle-daily-verse" title="Show another inspiring verse" class="p-2 rounded-xl bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:text-indigo-600 dark:hover:text-indigo-400 transition">
+              <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+            </button>
           </div>
         </div>
       </div>
 
-      <!-- Task Productivity Stats Bar -->
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-        <div class="glass-panel rounded-xl p-4 flex items-center gap-3">
-          <div class="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center">
-            <i data-lucide="list-todo" class="w-5 h-5"></i>
+      <!-- Task Productivity Stats Bar & Progress -->
+      <div class="space-y-3">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+          <div class="glass-panel rounded-xl p-4 flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+              <i data-lucide="list-todo" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div id="stat-total" class="text-xl font-bold">0</div>
+              <div class="text-xs text-slate-500 dark:text-slate-400">Total Tasks</div>
+            </div>
           </div>
-          <div>
-            <div id="stat-total" class="text-xl font-bold">0</div>
-            <div class="text-xs text-slate-500 dark:text-slate-400">Total Tasks</div>
+
+          <div class="glass-panel rounded-xl p-4 flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+              <i data-lucide="clock" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div id="stat-pending" class="text-xl font-bold">0</div>
+              <div class="text-xs text-slate-500 dark:text-slate-400">In Progress</div>
+            </div>
+          </div>
+
+          <div class="glass-panel rounded-xl p-4 flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+              <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div id="stat-completed" class="text-xl font-bold">0</div>
+              <div class="text-xs text-slate-500 dark:text-slate-400">Completed</div>
+            </div>
+          </div>
+
+          <div class="glass-panel rounded-xl p-4 flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-violet-100 dark:bg-violet-950/60 text-violet-600 dark:text-violet-400 flex items-center justify-center">
+              <i data-lucide="sparkles" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div id="stat-percent" class="text-xl font-bold">0%</div>
+              <div class="text-xs text-slate-500 dark:text-slate-400">Progress Today</div>
+            </div>
           </div>
         </div>
 
-        <div class="glass-panel rounded-xl p-4 flex items-center gap-3">
-          <div class="w-10 h-10 rounded-lg bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center">
-            <i data-lucide="clock" class="w-5 h-5"></i>
+        <!-- Task Completion Progress Bar -->
+        <div class="glass-panel rounded-xl px-4 py-2.5 flex items-center gap-3">
+          <span class="text-xs font-medium text-slate-500 dark:text-slate-400 shrink-0">Daily Completion</span>
+          <div class="flex-1 bg-slate-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
+            <div id="task-progress-bar" class="bg-gradient-to-r from-indigo-500 to-emerald-500 h-full w-0 transition-all duration-500"></div>
           </div>
-          <div>
-            <div id="stat-pending" class="text-xl font-bold">0</div>
-            <div class="text-xs text-slate-500 dark:text-slate-400">In Progress</div>
-          </div>
-        </div>
-
-        <div class="glass-panel rounded-xl p-4 flex items-center gap-3">
-          <div class="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-            <i data-lucide="check-circle-2" class="w-5 h-5"></i>
-          </div>
-          <div>
-            <div id="stat-completed" class="text-xl font-bold">0</div>
-            <div class="text-xs text-slate-500 dark:text-slate-400">Completed</div>
-          </div>
-        </div>
-
-        <div class="glass-panel rounded-xl p-4 flex items-center gap-3">
-          <div class="w-10 h-10 rounded-lg bg-violet-100 dark:bg-violet-950/60 text-violet-600 dark:text-violet-400 flex items-center justify-center">
-            <i data-lucide="sparkles" class="w-5 h-5"></i>
-          </div>
-          <div>
-            <div id="stat-percent" class="text-xl font-bold">0%</div>
-            <div class="text-xs text-slate-500 dark:text-slate-400">Progress Today</div>
-          </div>
+          <span id="task-progress-label" class="text-xs font-semibold text-slate-700 dark:text-slate-300 font-mono">0%</span>
         </div>
       </div>
 
@@ -233,38 +248,49 @@
       <div class="glass-panel rounded-2xl p-4 sm:p-5 space-y-4">
         
         <!-- Add Task Form -->
-        <form id="form-quick-add" class="flex flex-col sm:flex-row gap-2.5">
-          <div class="relative flex-1">
-            <i data-lucide="plus-circle" class="absolute left-3.5 top-3 w-4 h-4 text-slate-400"></i>
-            <input type="text" id="input-task-title" required placeholder="What would you like to accomplish? (e.g. Morning prayer, Finish report, Call Mom...)" 
-              class="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white transition">
+        <form id="form-quick-add" class="space-y-3">
+          <div class="flex flex-col sm:flex-row gap-2.5">
+            <div class="relative flex-1">
+              <i data-lucide="plus-circle" class="absolute left-3.5 top-3 w-4 h-4 text-slate-400"></i>
+              <input type="text" id="input-task-title" required placeholder="What would you like to accomplish? (e.g. Morning prayer, Finish report, Call Mom...)" 
+                class="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white transition">
+            </div>
+
+            <!-- Category Select -->
+            <select id="select-task-category" class="px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <option value="Faith & Prayer">🕊️ Faith & Prayer</option>
+              <option value="Work & Study">💼 Work & Study</option>
+              <option value="Personal">🌱 Personal</option>
+              <option value="Family & Home">🏡 Family & Home</option>
+              <option value="Health & Rest">🌿 Health & Rest</option>
+            </select>
+
+            <!-- Priority Select -->
+            <select id="select-task-priority" class="px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <option value="Normal">Priority: Normal</option>
+              <option value="High">🔥 Priority: High</option>
+              <option value="Urgent">⚡ Priority: Urgent</option>
+              <option value="Low">🌱 Priority: Low</option>
+            </select>
+
+            <!-- Due Date Input with today's date -->
+            <div class="flex items-center gap-1.5">
+              <input type="date" id="input-task-due" class="px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <button type="button" id="btn-due-today" title="Set due date to Today" class="px-2 py-2 text-xs rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-indigo-600 transition">Today</button>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="px-5 py-2.5 rounded-xl font-medium text-sm text-white bg-indigo-600 hover:bg-indigo-700 active:scale-95 transition shadow-sm flex items-center justify-center gap-1.5">
+              <i data-lucide="plus" class="w-4 h-4"></i>
+              <span>Add Task</span>
+            </button>
           </div>
 
-          <!-- Category Select -->
-          <select id="select-task-category" class="px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-            <option value="Faith & Prayer">🕊️ Faith & Prayer</option>
-            <option value="Work & Study">💼 Work & Study</option>
-            <option value="Personal">🌱 Personal</option>
-            <option value="Family & Home">🏡 Family & Home</option>
-            <option value="Health & Rest">🌿 Health & Rest</option>
-          </select>
-
-          <!-- Priority Select -->
-          <select id="select-task-priority" class="px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-            <option value="Normal">Priority: Normal</option>
-            <option value="High">🔥 Priority: High</option>
-            <option value="Urgent">⚡ Priority: Urgent</option>
-            <option value="Low">🌱 Priority: Low</option>
-          </select>
-
-          <!-- Due Date -->
-          <input type="date" id="input-task-due" class="px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-
-          <!-- Submit Button -->
-          <button type="submit" class="px-5 py-2.5 rounded-xl font-medium text-sm text-white bg-indigo-600 hover:bg-indigo-700 active:scale-95 transition shadow-sm flex items-center justify-center gap-1.5">
-            <i data-lucide="plus" class="w-4 h-4"></i>
-            <span>Add Task</span>
-          </button>
+          <!-- Optional Notes / Attach Scripture expandable input -->
+          <div class="flex items-center gap-2">
+            <input type="text" id="input-task-notes" placeholder="Optional notes or reflection for this task..." 
+              class="flex-1 px-3 py-1.5 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-900/60 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+          </div>
         </form>
 
         <!-- Filter Bar & Search -->
@@ -276,14 +302,22 @@
             <button data-filter="pending" class="filter-pill px-3 py-1 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">Active</button>
             <button data-filter="completed" class="filter-pill px-3 py-1 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">Done</button>
             <button data-filter="faith" class="filter-pill px-3 py-1 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">🕊️ Faith</button>
-            <button data-filter="high" class="filter-pill px-3 py-1 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">🔥 High Priority</button>
+            <button data-filter="high" class="filter-pill px-3 py-1 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">🔥 High</button>
+            <button data-filter="today" class="filter-pill px-3 py-1 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">📅 Today</button>
           </div>
 
-          <!-- Search Input -->
-          <div class="relative w-full sm:w-64">
-            <i data-lucide="search" class="absolute left-3 top-2.5 w-3.5 h-3.5 text-slate-400"></i>
-            <input type="text" id="input-search-tasks" placeholder="Search tasks..." 
-              class="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+          <div class="flex items-center gap-2">
+            <!-- Search Input -->
+            <div class="relative w-full sm:w-60">
+              <i data-lucide="search" class="absolute left-3 top-2.5 w-3.5 h-3.5 text-slate-400"></i>
+              <input type="text" id="input-search-tasks" placeholder="Search tasks..." 
+                class="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+            </div>
+
+            <!-- Clear Completed Button -->
+            <button id="btn-clear-completed" title="Clear completed tasks" class="text-xs text-slate-400 hover:text-rose-500 p-1.5 rounded-lg transition shrink-0">
+              <i data-lucide="trash" class="w-3.5 h-3.5"></i>
+            </button>
           </div>
         </div>
 
@@ -320,7 +354,7 @@
               <span>Automated Scripture Publishing System</span>
             </h2>
             <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
-              Choose the exact time(s) of day you want God's Word to automatically publish to your screen.
+              Set the exact particular time(s) of day you want God's Word to automatically publish to your screen.
             </p>
           </div>
 
@@ -333,7 +367,7 @@
         <!-- Master Switch & Status Card -->
         <div class="p-4 rounded-xl bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-200/60 dark:border-indigo-800/60 flex items-center justify-between">
           <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center">
+            <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow">
               <i data-lucide="screen-share" class="w-5 h-5"></i>
             </div>
             <div>
@@ -348,13 +382,53 @@
           </label>
         </div>
 
+        <!-- Quick Preset Scheduling Buttons -->
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Quick Time Presets</span>
+            <span class="text-[11px] text-slate-400">Click to instantly add to your schedule</span>
+          </div>
+
+          <div class="flex flex-wrap gap-2">
+            <button id="btn-preset-1min" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-amber-100 hover:bg-amber-200 text-amber-900 dark:bg-amber-950/80 dark:hover:bg-amber-900 dark:text-amber-200 border border-amber-300 dark:border-amber-700/60 flex items-center gap-1.5 transition shadow-sm active:scale-95">
+              <i data-lucide="zap" class="w-3.5 h-3.5 text-amber-600"></i>
+              <span>⚡ In 1 Minute (Quick Test)</span>
+            </button>
+
+            <button id="btn-preset-morning" class="px-3 py-1.5 rounded-xl text-xs font-medium bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-indigo-400 flex items-center gap-1.5 transition">
+              <i data-lucide="sunrise" class="w-3.5 h-3.5 text-amber-500"></i>
+              <span>Morning (07:00)</span>
+            </button>
+
+            <button id="btn-preset-noon" class="px-3 py-1.5 rounded-xl text-xs font-medium bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-indigo-400 flex items-center gap-1.5 transition">
+              <i data-lucide="sun" class="w-3.5 h-3.5 text-amber-500"></i>
+              <span>Midday (12:00)</span>
+            </button>
+
+            <button id="btn-preset-afternoon" class="px-3 py-1.5 rounded-xl text-xs font-medium bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-indigo-400 flex items-center gap-1.5 transition">
+              <i data-lucide="coffee" class="w-3.5 h-3.5 text-amber-600"></i>
+              <span>Afternoon (15:00)</span>
+            </button>
+
+            <button id="btn-preset-evening" class="px-3 py-1.5 rounded-xl text-xs font-medium bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-indigo-400 flex items-center gap-1.5 transition">
+              <i data-lucide="sunset" class="w-3.5 h-3.5 text-indigo-400"></i>
+              <span>Evening (18:30)</span>
+            </button>
+
+            <button id="btn-preset-night" class="px-3 py-1.5 rounded-xl text-xs font-medium bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-indigo-400 flex items-center gap-1.5 transition">
+              <i data-lucide="moon" class="w-3.5 h-3.5 text-indigo-400"></i>
+              <span>Bedtime (21:30)</span>
+            </button>
+          </div>
+        </div>
+
         <!-- Particular Time Configuration -->
-        <div class="space-y-4">
+        <div class="space-y-4 pt-2 border-t border-slate-200 dark:border-slate-800">
           <div class="flex items-center justify-between">
             <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              Scheduled Daily Alert Times
+              Active Scheduled Alert Times
             </h3>
-            <span class="text-xs text-slate-400">Add any time you want verses published</span>
+            <span class="text-xs text-slate-400">Verses will automatically publish to screen at each time</span>
           </div>
 
           <!-- Times List Tags -->
@@ -367,7 +441,7 @@
             <input type="time" id="input-new-publish-time" value="09:00" class="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
             <button id="btn-add-publish-time" class="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900 hover:bg-slate-700 transition flex items-center gap-1.5">
               <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-              <span>Add Scheduled Time</span>
+              <span>Add Time</span>
             </button>
           </div>
         </div>
@@ -448,7 +522,7 @@
           </div>
 
           <!-- Chapter Select Controls -->
-          <div class="flex flex-wrap items-center gap-2.5">
+          <div class="flex flex-wrap items-center gap-2">
             <select id="reader-select-book" class="px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-medium focus:ring-2 focus:ring-indigo-500">
               <!-- Dynamically populated with 66 books -->
             </select>
@@ -457,8 +531,24 @@
               <!-- Dynamically populated with chapter numbers -->
             </select>
 
-            <button id="btn-load-chapter" class="px-4 py-2 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white transition">
-              Load Chapter
+            <!-- Previous Chapter Button -->
+            <button id="btn-reader-prev-chapter" title="Previous Chapter" class="p-2 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+              <i data-lucide="chevron-left" class="w-4 h-4"></i>
+            </button>
+
+            <!-- Next Chapter Button -->
+            <button id="btn-reader-next-chapter" title="Next Chapter" class="p-2 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+              <i data-lucide="chevron-right" class="w-4 h-4"></i>
+            </button>
+
+            <button id="btn-load-chapter" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white transition">
+              Load
+            </button>
+
+            <!-- Inspiring Passages Quick Jump -->
+            <button id="btn-reader-random-chapter" title="Jump to an inspiring chapter" class="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-950 transition">
+              <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+              <span>Inspiring Chapter</span>
             </button>
           </div>
         </div>
@@ -466,9 +556,14 @@
         <!-- Audio Player Bar for Entire Chapter -->
         <div class="p-4 rounded-xl bg-slate-100/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div class="flex items-center gap-3">
-            <button id="btn-reader-play-audio" class="w-10 h-10 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white flex items-center justify-center shadow-md shadow-indigo-500/20 active:scale-95 transition">
+            <button id="btn-reader-play-audio" title="Play or pause audio reading of full chapter" class="w-10 h-10 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white flex items-center justify-center shadow-md shadow-indigo-500/20 active:scale-95 transition">
               <i data-lucide="play" id="reader-play-icon" class="w-5 h-5 fill-current"></i>
             </button>
+
+            <button id="btn-reader-stop-audio" title="Stop audio narration" class="w-8 h-8 rounded-full border border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 flex items-center justify-center transition">
+              <i data-lucide="square" class="w-3.5 h-3.5"></i>
+            </button>
+
             <div>
               <div class="font-semibold text-xs text-slate-800 dark:text-slate-200 flex items-center gap-2">
                 <span>Audio Narration: <span id="reader-audio-status">Ready</span></span>
@@ -480,7 +575,7 @@
                   <span class="audio-bar"></span>
                 </div>
               </div>
-              <div id="reader-audio-verse-indicator" class="text-[11px] text-slate-500 dark:text-slate-400">Click play to listen to entire chapter</div>
+              <div id="reader-audio-verse-indicator" class="text-[11px] text-slate-500 dark:text-slate-400">Click play to listen to entire chapter, or click any verse below</div>
             </div>
           </div>
 
@@ -561,22 +656,22 @@
   <!-- ======================================================== -->
   <!-- AUTOMATIC SCREEN PUBLISH POPUP MODAL (THE MAIN EVENT)   -->
   <!-- ======================================================== -->
-  <div id="modal-publish-screen" class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-950/70 backdrop-blur-md hidden transition-all duration-300">
+  <div id="modal-publish-screen" class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-950/75 backdrop-blur-md hidden transition-all duration-300">
     
     <div class="relative w-full max-w-2xl rounded-3xl p-6 sm:p-8 bg-gradient-to-b from-slate-900 via-indigo-950 to-slate-950 border border-indigo-500/40 text-white shadow-2xl publish-modal-active overflow-hidden">
       
       <!-- Top Decorative Accent -->
-      <div class="absolute -top-24 -left-24 w-48 h-48 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none"></div>
-      <div class="absolute -bottom-24 -right-24 w-48 h-48 bg-violet-500/20 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -top-24 -left-24 w-48 h-48 bg-indigo-500/25 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -bottom-24 -right-24 w-48 h-48 bg-violet-500/25 rounded-full blur-3xl pointer-events-none"></div>
 
       <!-- Header with Time Badge & Close Button -->
-      <div class="flex items-center justify-between mb-5 relative z-10">
-        <div class="flex items-center gap-2">
+      <div class="flex items-center justify-between mb-4 relative z-10">
+        <div class="flex items-center gap-2 flex-wrap">
           <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/30 text-indigo-300 border border-indigo-400/30">
             <i data-lucide="sparkles" class="w-3.5 h-3.5 text-indigo-300"></i>
             <span>Published To Your Screen</span>
           </span>
-          <span id="popup-category-badge" class="text-xs text-slate-300 font-medium">
+          <span id="popup-category-badge" class="text-xs text-slate-300 font-medium px-2 py-0.5 rounded-full bg-slate-800/80">
             Peace & Comfort
           </span>
         </div>
@@ -587,7 +682,7 @@
       </div>
 
       <!-- Scripture Passage -->
-      <div class="space-y-4 my-6 text-center sm:text-left relative z-10">
+      <div class="space-y-4 my-5 text-center sm:text-left relative z-10">
         <p id="popup-verse-text" class="font-scripture text-xl sm:text-2xl leading-relaxed text-indigo-50 font-normal italic">
           "In nothing be anxious, but in everything, by prayer and petition with thanksgiving, let your requests be made known to God..."
         </p>
@@ -603,7 +698,7 @@
       </div>
 
       <!-- Audio Narration Control inside Popup -->
-      <div class="my-5 p-3.5 rounded-2xl bg-indigo-900/40 border border-indigo-700/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 relative z-10">
+      <div class="my-4 p-3.5 rounded-2xl bg-indigo-900/40 border border-indigo-700/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 relative z-10">
         <div class="flex items-center gap-3">
           <button id="btn-popup-toggle-audio" class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-violet-500 hover:from-indigo-400 hover:to-violet-400 text-white flex items-center justify-center shadow-lg shadow-indigo-500/30 active:scale-95 transition">
             <i data-lucide="volume-2" id="popup-audio-icon" class="w-5 h-5"></i>
@@ -633,31 +728,134 @@
 
       <!-- Action Footer Buttons -->
       <div class="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-indigo-900/80 relative z-10">
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 flex-wrap">
           <!-- Read Through All / Full Chapter -->
-          <button id="btn-popup-read-full" class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold bg-white text-indigo-950 hover:bg-indigo-50 shadow transition active:scale-95">
+          <button id="btn-popup-read-full" class="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-white text-indigo-950 hover:bg-indigo-50 shadow transition active:scale-95">
             <i data-lucide="book-open" class="w-4 h-4 text-indigo-600"></i>
             <span>Read Through All (Full Chapter)</span>
           </button>
 
           <!-- Add as To-Do Task -->
-          <button id="btn-popup-add-task" class="flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-medium bg-indigo-900/60 hover:bg-indigo-800/80 text-indigo-200 border border-indigo-700/50 transition">
+          <button id="btn-popup-add-task" class="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium bg-indigo-900/60 hover:bg-indigo-800/80 text-indigo-200 border border-indigo-700/50 transition">
             <i data-lucide="plus-circle" class="w-4 h-4"></i>
             <span>Add to Tasks</span>
           </button>
         </div>
 
         <div class="flex items-center gap-2">
+          <!-- Shuffle / Another Verse -->
+          <button id="btn-popup-shuffle" class="p-2 rounded-xl bg-indigo-900/60 hover:bg-indigo-800/80 text-indigo-200 border border-indigo-700/50 transition" title="Show Another Verse">
+            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+          </button>
+
           <!-- Favorite -->
-          <button id="btn-popup-bookmark" class="p-2.5 rounded-xl bg-indigo-900/60 hover:bg-indigo-800/80 text-indigo-200 border border-indigo-700/50 transition" title="Save Verse">
+          <button id="btn-popup-bookmark" class="p-2 rounded-xl bg-indigo-900/60 hover:bg-indigo-800/80 text-indigo-200 border border-indigo-700/50 transition" title="Save Verse">
             <i data-lucide="bookmark" id="popup-bookmark-icon" class="w-4 h-4"></i>
           </button>
 
           <!-- Dismiss -->
-          <button id="btn-popup-dismiss" class="px-4 py-2.5 rounded-xl text-xs font-medium text-slate-300 hover:text-white transition">
-            Done Reflecting
+          <button id="btn-popup-dismiss" class="px-3.5 py-2 rounded-xl text-xs font-medium text-slate-300 hover:text-white transition">
+            Done
           </button>
         </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL: EDIT TASK                                         -->
+  <!-- ======================================================== -->
+  <div id="modal-edit-task" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm hidden">
+    <div class="w-full max-w-md glass-panel rounded-2xl p-6 space-y-4 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-2xl border border-slate-200 dark:border-slate-800">
+      
+      <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+        <h3 class="font-bold text-base flex items-center gap-2">
+          <i data-lucide="pencil" class="w-4 h-4 text-indigo-600"></i>
+          <span>Edit Task</span>
+        </h3>
+        <button id="btn-close-edit-modal" class="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <form id="form-edit-task" class="space-y-3.5 text-xs sm:text-sm">
+        <input type="hidden" id="edit-task-id">
+
+        <div>
+          <label class="block font-semibold mb-1 text-xs text-slate-600 dark:text-slate-400">Task Title</label>
+          <input type="text" id="edit-task-title" required class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs sm:text-sm">
+        </div>
+
+        <div>
+          <label class="block font-semibold mb-1 text-xs text-slate-600 dark:text-slate-400">Notes & Reflection</label>
+          <textarea id="edit-task-notes" rows="2" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs sm:text-sm"></textarea>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2.5">
+          <div>
+            <label class="block font-semibold mb-1 text-xs text-slate-600 dark:text-slate-400">Category</label>
+            <select id="edit-task-category" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs">
+              <option value="Faith & Prayer">🕊️ Faith & Prayer</option>
+              <option value="Work & Study">💼 Work & Study</option>
+              <option value="Personal">🌱 Personal</option>
+              <option value="Family & Home">🏡 Family & Home</option>
+              <option value="Health & Rest">🌿 Health & Rest</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block font-semibold mb-1 text-xs text-slate-600 dark:text-slate-400">Priority</label>
+            <select id="edit-task-priority" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs">
+              <option value="Normal">Priority: Normal</option>
+              <option value="High">🔥 Priority: High</option>
+              <option value="Urgent">⚡ Priority: Urgent</option>
+              <option value="Low">🌱 Priority: Low</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-semibold mb-1 text-xs text-slate-600 dark:text-slate-400">Due Date</label>
+          <input type="date" id="edit-task-due" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs">
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+          <button type="button" id="btn-cancel-edit-task" class="px-4 py-2 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
+            Cancel
+          </button>
+          <button type="submit" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-xs">
+            Save Changes
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL: ATTACH SCRIPTURE TO TASK                          -->
+  <!-- ======================================================== -->
+  <div id="modal-attach-verse" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm hidden">
+    <div class="w-full max-w-lg glass-panel rounded-2xl p-6 space-y-4 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-2xl border border-slate-200 dark:border-slate-800 max-h-[85vh] flex flex-col">
+      
+      <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+        <h3 class="font-bold text-base flex items-center gap-2">
+          <i data-lucide="sparkles" class="w-4 h-4 text-indigo-600"></i>
+          <span>Attach Scripture to Task</span>
+        </h3>
+        <button id="btn-close-attach-modal" class="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <input type="hidden" id="attach-verse-task-id">
+      <p class="text-xs text-slate-500 dark:text-slate-400">
+        Choose an inspiring verse to link to this task for encouragement:
+      </p>
+
+      <div id="attach-verse-list" class="space-y-2 overflow-y-auto flex-1 pr-1">
+        <!-- Dynamically populated verse cards -->
       </div>
 
     </div>
