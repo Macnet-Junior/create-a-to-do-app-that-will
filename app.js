@@ -34,6 +34,12 @@ class GraceTasksApp {
     this.setupAudioListeners();
     this.initReaderSelectors();
 
+    // Set today's date into the due date input
+    const dueInput = document.getElementById('input-task-due');
+    if (dueInput && !dueInput.value) {
+      dueInput.value = new Date().toISOString().split('T')[0];
+    }
+
     // Default published verse is today's verse
     this.currentPublishedVerse = bibleService.getDailyVerse();
     this.renderDailyVerseBanner();
@@ -48,7 +54,7 @@ class GraceTasksApp {
     // Refresh icons
     this.refreshIcons();
 
-    // Start live countdown ticker
+    // Start live countdown ticker (ticks every second)
     setInterval(() => this.updateCountdownTimer(), 1000);
     this.updateCountdownTimer();
   }
@@ -99,6 +105,7 @@ class GraceTasksApp {
   }
 
   seedSampleTasks(save = true) {
+    const today = new Date().toISOString().split('T')[0];
     this.tasks = [
       {
         id: 'task-1',
@@ -106,7 +113,7 @@ class GraceTasksApp {
         notes: 'Read Philippians 4:6-7 and surrender anxieties for today.',
         category: 'Faith & Prayer',
         priority: 'High',
-        dueDate: new Date().toISOString().split('T')[0],
+        dueDate: today,
         completed: false,
         linkedVerse: {
           reference: "Philippians 4:6-7",
@@ -120,7 +127,7 @@ class GraceTasksApp {
         notes: 'Prioritize the top 3 most important deliverables.',
         category: 'Work & Study',
         priority: 'High',
-        dueDate: new Date().toISOString().split('T')[0],
+        dueDate: today,
         completed: true,
         completedAt: Date.now() - 1800000,
         createdAt: Date.now() - 7200000
@@ -131,8 +138,12 @@ class GraceTasksApp {
         notes: 'Share a verse or a thoughtful note of support.',
         category: 'Faith & Prayer',
         priority: 'Normal',
-        dueDate: new Date().toISOString().split('T')[0],
+        dueDate: today,
         completed: false,
+        linkedVerse: {
+          reference: "1 Thessalonians 5:11",
+          text: "Therefore exhort one another, and build each other up, even as you also do."
+        },
         createdAt: Date.now() - 1000000
       },
       {
@@ -141,7 +152,7 @@ class GraceTasksApp {
         notes: 'Disconnect from screens and listen to peaceful audio.',
         category: 'Health & Rest',
         priority: 'Normal',
-        dueDate: new Date().toISOString().split('T')[0],
+        dueDate: today,
         completed: false,
         createdAt: Date.now() - 500000
       }
@@ -228,12 +239,12 @@ class GraceTasksApp {
     }
 
     if (headerCountdown) {
-      headerCountdown.textContent = `${info.hours}h ${String(info.minutes).padStart(2, '0')}m ${String(info.seconds).padStart(2, '0')}s`;
+      headerCountdown.textContent = `${info.hours > 0 ? info.hours + 'h ' : ''}${info.minutes}m ${String(info.seconds).padStart(2, '0')}s`;
     }
 
     if (statusSummary) {
       const formattedTime = info.targetDate ? info.targetDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--';
-      statusSummary.textContent = `Active • Next publish at ${formattedTime} (${info.hours}h ${info.minutes}m left)`;
+      statusSummary.textContent = `Active • Next publish at ${formattedTime} (${info.formatted})`;
     }
   }
 
@@ -250,13 +261,16 @@ class GraceTasksApp {
     }
 
     times.forEach(tStr => {
-      const [h, m] = tStr.split(':');
-      const d = new Date();
-      d.setHours(parseInt(h, 10), parseInt(m, 10));
-      const displayTime = d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+      const parts = tStr.split(':');
+      let displayTime = tStr;
+      if (parts.length >= 2) {
+        const d = new Date();
+        d.setHours(parseInt(parts[0], 10), parseInt(parts[1], 10));
+        displayTime = d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+      }
 
       const badge = document.createElement('div');
-      badge.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-indigo-50 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800';
+      badge.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-indigo-50 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 shadow-sm';
       badge.innerHTML = `
         <i data-lucide="clock" class="w-3.5 h-3.5"></i>
         <span>${displayTime}</span>
@@ -368,11 +382,7 @@ class GraceTasksApp {
     if (!verse) return;
 
     const speechText = `${verse.reference}. ${verse.text}. Devotional thought: ${verse.reflection || ''}`;
-    audioEngine.speak(speechText, {
-      onEnd: () => {
-        // finished
-      }
-    });
+    audioEngine.speak(speechText);
   }
 
   // --- Screen Publishing Modal Logic ---
@@ -410,6 +420,14 @@ class GraceTasksApp {
     }
   }
 
+  shufflePopupVerse() {
+    const fresh = bibleService.getRandomVerse();
+    this.openPublishModal(fresh);
+    if (audioEngine.isPlayingTTS) {
+      this.speakCurrentVerse();
+    }
+  }
+
   updateModalBookmarkState(verse) {
     const bookmarkIcon = document.getElementById('popup-bookmark-icon');
     if (!bookmarkIcon) return;
@@ -436,14 +454,14 @@ class GraceTasksApp {
   }
 
   // --- Task Management & Rendering ---
-  addTask(title, category = 'Faith & Prayer', priority = 'Normal', dueDate = null, linkedVerse = null) {
+  addTask(title, category = 'Faith & Prayer', priority = 'Normal', dueDate = null, linkedVerse = null, notes = '') {
     const trimmedTitle = title.trim();
     if (!trimmedTitle) return;
 
     const newTask = {
       id: 'task-' + Date.now(),
       title: trimmedTitle,
-      notes: '',
+      notes: notes || '',
       category: category,
       priority: priority,
       dueDate: dueDate || new Date().toISOString().split('T')[0],
@@ -472,8 +490,8 @@ class GraceTasksApp {
       // Trigger celebratory confetti
       if (typeof window.confetti === 'function') {
         window.confetti({
-          particleCount: 50,
-          spread: 60,
+          particleCount: 55,
+          spread: 65,
           origin: { y: 0.8 },
           colors: ['#6366f1', '#a855f7', '#10b981', '#f59e0b']
         });
@@ -492,10 +510,111 @@ class GraceTasksApp {
     this.showToast(`Deleted task: "${deleted.title}"`);
   }
 
+  clearCompletedTasks() {
+    const completedCount = this.tasks.filter(t => t.completed).length;
+    if (completedCount === 0) {
+      this.showToast("No completed tasks to clear.");
+      return;
+    }
+    this.tasks = this.tasks.filter(t => !t.completed);
+    this.saveTasks();
+    this.showToast(`Cleared ${completedCount} completed task(s)!`);
+  }
+
+  openEditTaskModal(taskId) {
+    const task = this.tasks.find(t => t.id === taskId);
+    if (!task) return;
+
+    const modal = document.getElementById('modal-edit-task');
+    const idInput = document.getElementById('edit-task-id');
+    const titleInput = document.getElementById('edit-task-title');
+    const notesInput = document.getElementById('edit-task-notes');
+    const catInput = document.getElementById('edit-task-category');
+    const prioInput = document.getElementById('edit-task-priority');
+    const dueInput = document.getElementById('edit-task-due');
+
+    if (idInput) idInput.value = task.id;
+    if (titleInput) titleInput.value = task.title;
+    if (notesInput) notesInput.value = task.notes || '';
+    if (catInput) catInput.value = task.category;
+    if (prioInput) prioInput.value = task.priority;
+    if (dueInput) dueInput.value = task.dueDate || '';
+
+    if (modal) modal.classList.remove('hidden');
+    this.refreshIcons();
+  }
+
+  saveTaskEdit(taskId, title, notes, category, priority, dueDate) {
+    const task = this.tasks.find(t => t.id === taskId);
+    if (!task) return;
+
+    task.title = title.trim();
+    task.notes = notes.trim();
+    task.category = category;
+    task.priority = priority;
+    task.dueDate = dueDate;
+
+    this.saveTasks();
+    this.showToast("Task updated successfully!");
+
+    const modal = document.getElementById('modal-edit-task');
+    if (modal) modal.classList.add('hidden');
+  }
+
+  openAttachVerseModal(taskId) {
+    const modal = document.getElementById('modal-attach-verse');
+    const taskIdInput = document.getElementById('attach-verse-task-id');
+    const listContainer = document.getElementById('attach-verse-list');
+    if (!modal || !listContainer) return;
+
+    if (taskIdInput) taskIdInput.value = taskId;
+    listContainer.innerHTML = '';
+
+    // Render verse options from DAILY_VERSES
+    DAILY_VERSES.forEach(verse => {
+      const card = document.createElement('div');
+      card.className = 'p-3 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-indigo-400 dark:hover:border-indigo-600 bg-white/70 dark:bg-slate-800/70 cursor-pointer transition';
+      card.innerHTML = `
+        <div class="flex items-center justify-between mb-1">
+          <span class="font-semibold text-xs text-indigo-700 dark:text-indigo-400">${verse.reference}</span>
+          <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">${verse.category}</span>
+        </div>
+        <p class="font-scripture text-xs text-slate-700 dark:text-slate-300 italic line-clamp-2">"${verse.text}"</p>
+      `;
+
+      card.addEventListener('click', () => {
+        this.attachVerseToTask(taskId, verse);
+        modal.classList.add('hidden');
+      });
+
+      listContainer.appendChild(card);
+    });
+
+    modal.classList.remove('hidden');
+    this.refreshIcons();
+  }
+
+  attachVerseToTask(taskId, verse) {
+    const task = this.tasks.find(t => t.id === taskId);
+    if (!task) return;
+
+    task.linkedVerse = {
+      reference: verse.reference,
+      text: verse.text,
+      book: verse.book,
+      chapter: verse.chapter
+    };
+
+    this.saveTasks();
+    this.showToast(`Attached ${verse.reference} to "${task.title}"`);
+  }
+
   renderTasks() {
     const container = document.getElementById('tasks-list-container');
     const emptyState = document.getElementById('tasks-empty-state');
     if (!container) return;
+
+    const todayStr = new Date().toISOString().split('T')[0];
 
     // Filter tasks
     const query = this.searchQuery.toLowerCase();
@@ -504,7 +623,8 @@ class GraceTasksApp {
       const matchesSearch = !query || 
         task.title.toLowerCase().includes(query) || 
         task.category.toLowerCase().includes(query) ||
-        (task.notes && task.notes.toLowerCase().includes(query));
+        (task.notes && task.notes.toLowerCase().includes(query)) ||
+        (task.linkedVerse && task.linkedVerse.reference.toLowerCase().includes(query));
 
       if (!matchesSearch) return false;
 
@@ -513,6 +633,7 @@ class GraceTasksApp {
       if (this.currentFilter === 'completed') return task.completed;
       if (this.currentFilter === 'faith') return task.category.includes('Faith');
       if (this.currentFilter === 'high') return task.priority === 'High' || task.priority === 'Urgent';
+      if (this.currentFilter === 'today') return task.dueDate === todayStr;
       return true;
     });
 
@@ -550,12 +671,15 @@ class GraceTasksApp {
       else if (task.category.includes('Family')) categoryIcon = 'home';
       else if (task.category.includes('Health')) categoryIcon = 'heart-pulse';
 
+      // Due date highlight
+      const isDueToday = task.dueDate === todayStr;
+
       card.innerHTML = `
         <div class="flex items-start justify-between gap-3">
           
           <!-- Checkbox & Title -->
           <div class="flex items-start gap-3 flex-1 min-w-0">
-            <button data-action="toggle" data-id="${task.id}" class="mt-0.5 w-5 h-5 rounded-lg border flex items-center justify-center transition ${
+            <button data-action="toggle" data-id="${task.id}" class="mt-0.5 w-5 h-5 rounded-lg border flex items-center justify-center transition shrink-0 ${
               task.completed 
                 ? 'bg-emerald-600 border-emerald-600 text-white' 
                 : 'border-slate-300 dark:border-slate-600 hover:border-indigo-500 bg-white dark:bg-slate-900'
@@ -565,17 +689,21 @@ class GraceTasksApp {
 
             <div class="flex-1 min-w-0">
               <div class="flex flex-wrap items-center gap-2 mb-1">
-                <span class="text-xs px-2 py-0.5 rounded-md font-medium ${priorityClass}">
+                <span class="text-[11px] px-2 py-0.5 rounded-md font-medium ${priorityClass}">
                   ${task.priority}
                 </span>
-                <span class="text-xs px-2 py-0.5 rounded-md font-medium bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 flex items-center gap-1">
+                <span class="text-[11px] px-2 py-0.5 rounded-md font-medium bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 flex items-center gap-1">
                   <i data-lucide="${categoryIcon}" class="w-3 h-3"></i>
                   <span>${task.category}</span>
                 </span>
                 ${task.dueDate ? `
-                  <span class="text-[11px] text-slate-400 dark:text-slate-500 flex items-center gap-1">
+                  <span class="text-[11px] px-2 py-0.5 rounded-md flex items-center gap-1 ${
+                    isDueToday 
+                      ? 'bg-indigo-50 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 font-semibold border border-indigo-200 dark:border-indigo-800' 
+                      : 'text-slate-400 dark:text-slate-500'
+                  }">
                     <i data-lucide="calendar" class="w-3 h-3"></i>
-                    <span>${task.dueDate}</span>
+                    <span>${isDueToday ? 'Today' : task.dueDate}</span>
                   </span>
                 ` : ''}
               </div>
@@ -597,16 +725,29 @@ class GraceTasksApp {
                     <i data-lucide="book-marked" class="w-3.5 h-3.5 text-indigo-500 shrink-0"></i>
                     <span class="truncate">"${task.linkedVerse.reference}: ${task.linkedVerse.text}"</span>
                   </div>
-                  <button data-action="speak-verse" data-id="${task.id}" title="Listen to verse" class="p-1 rounded text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 shrink-0">
-                    <i data-lucide="volume-2" class="w-3.5 h-3.5"></i>
-                  </button>
+                  <div class="flex items-center gap-1 shrink-0">
+                    <button data-action="speak-verse" data-id="${task.id}" title="Listen to verse audio" class="p-1 rounded text-indigo-600 hover:text-indigo-800 dark:text-indigo-400">
+                      <i data-lucide="volume-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button data-action="read-verse" data-id="${task.id}" title="Read full chapter" class="p-1 rounded text-indigo-600 hover:text-indigo-800 dark:text-indigo-400">
+                      <i data-lucide="book-open" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
                 </div>
               ` : ''}
             </div>
           </div>
 
-          <!-- Actions -->
+          <!-- Actions: Edit, Attach Verse, Delete -->
           <div class="flex items-center gap-1 shrink-0">
+            ${!task.linkedVerse ? `
+              <button data-action="attach-verse" data-id="${task.id}" title="Attach scripture encouragement" class="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+                <i data-lucide="sparkles" class="w-4 h-4"></i>
+              </button>
+            ` : ''}
+            <button data-action="edit" data-id="${task.id}" title="Edit task" class="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+              <i data-lucide="pencil" class="w-4 h-4"></i>
+            </button>
             <button data-action="delete" data-id="${task.id}" title="Delete task" class="p-1.5 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
               <i data-lucide="trash-2" class="w-4 h-4"></i>
             </button>
@@ -620,14 +761,36 @@ class GraceTasksApp {
         this.toggleTaskCompleted(task.id);
       });
 
+      card.querySelector('[data-action="edit"]').addEventListener('click', () => {
+        this.openEditTaskModal(task.id);
+      });
+
       card.querySelector('[data-action="delete"]').addEventListener('click', () => {
         this.deleteTask(task.id);
       });
+
+      const attachBtn = card.querySelector('[data-action="attach-verse"]');
+      if (attachBtn) {
+        attachBtn.addEventListener('click', () => {
+          this.openAttachVerseModal(task.id);
+        });
+      }
 
       const speakBtn = card.querySelector('[data-action="speak-verse"]');
       if (speakBtn && task.linkedVerse) {
         speakBtn.addEventListener('click', () => {
           audioEngine.speak(`${task.linkedVerse.reference}. ${task.linkedVerse.text}`);
+        });
+      }
+
+      const readBtn = card.querySelector('[data-action="read-verse"]');
+      if (readBtn && task.linkedVerse) {
+        readBtn.addEventListener('click', () => {
+          const parts = task.linkedVerse.reference.split(' ');
+          const book = parts.slice(0, -1).join(' ') || 'Philippians';
+          const chapPart = parts[parts.length - 1] || '4';
+          const chapter = parseInt(chapPart.split(':')[0], 10) || 4;
+          this.openReaderForVerse({ book, chapter });
         });
       }
 
@@ -648,12 +811,16 @@ class GraceTasksApp {
     const statCompleted = document.getElementById('stat-completed');
     const statPercent = document.getElementById('stat-percent');
     const tabBadge = document.getElementById('tab-badge-pending');
+    const progressBar = document.getElementById('task-progress-bar');
+    const progressLabel = document.getElementById('task-progress-label');
 
     if (statTotal) statTotal.textContent = total;
     if (statPending) statPending.textContent = pending;
     if (statCompleted) statCompleted.textContent = completed;
     if (statPercent) statPercent.textContent = `${percent}%`;
     if (tabBadge) tabBadge.textContent = pending;
+    if (progressBar) progressBar.style.width = `${percent}%`;
+    if (progressLabel) progressLabel.textContent = `${percent}%`;
   }
 
   // --- Favorites / Saved Verses ---
@@ -701,7 +868,7 @@ class GraceTasksApp {
             ${verse.category || 'Scripture'}
           </span>
           <div class="flex items-center gap-1">
-            <button data-action="speak-fav" class="p-1.5 rounded-lg text-slate-500 hover:text-indigo-600 transition" title="Listen">
+            <button data-action="speak-fav" class="p-1.5 rounded-lg text-slate-500 hover:text-indigo-600 transition" title="Listen Audio">
               <i data-lucide="volume-2" class="w-4 h-4"></i>
             </button>
             <button data-action="read-fav" class="p-1.5 rounded-lg text-slate-500 hover:text-indigo-600 transition" title="Read Full Chapter">
@@ -765,24 +932,12 @@ class GraceTasksApp {
       bookSelect.appendChild(opt);
     });
 
-    const updateChapters = (bookName) => {
-      const bObj = BIBLE_BOOKS.find(b => b.name === bookName) || BIBLE_BOOKS[0];
-      chapterSelect.innerHTML = '';
-      for (let c = 1; c <= bObj.chapters; c++) {
-        const opt = document.createElement('option');
-        opt.value = c;
-        opt.textContent = `Chapter ${c}`;
-        if (c === this.readerChapter) opt.selected = true;
-        chapterSelect.appendChild(opt);
-      }
-    };
-
-    updateChapters(this.readerBook);
+    this.updateReaderChaptersDropdown();
 
     bookSelect.addEventListener('change', (e) => {
       this.readerBook = e.target.value;
       this.readerChapter = 1;
-      updateChapters(this.readerBook);
+      this.updateReaderChaptersDropdown();
     });
 
     chapterSelect.addEventListener('change', (e) => {
@@ -790,7 +945,59 @@ class GraceTasksApp {
     });
   }
 
-  async loadReaderChapter(book, chapter) {
+  updateReaderChaptersDropdown() {
+    const chapterSelect = document.getElementById('reader-select-chapter');
+    if (!chapterSelect) return;
+
+    const bObj = BIBLE_BOOKS.find(b => b.name === this.readerBook) || BIBLE_BOOKS[0];
+    chapterSelect.innerHTML = '';
+    for (let c = 1; c <= bObj.chapters; c++) {
+      const opt = document.createElement('option');
+      opt.value = c;
+      opt.textContent = `Chapter ${c}`;
+      if (c === this.readerChapter) opt.selected = true;
+      chapterSelect.appendChild(opt);
+    }
+  }
+
+  navigateChapter(delta) {
+    const bObj = BIBLE_BOOKS.find(b => b.name === this.readerBook) || BIBLE_BOOKS[0];
+    let newChap = this.readerChapter + delta;
+
+    if (newChap < 1) {
+      // Go to previous book if available
+      const bIndex = BIBLE_BOOKS.findIndex(b => b.name === this.readerBook);
+      if (bIndex > 0) {
+        const prevBook = BIBLE_BOOKS[bIndex - 1];
+        this.readerBook = prevBook.name;
+        this.readerChapter = prevBook.chapters;
+      } else {
+        return;
+      }
+    } else if (newChap > bObj.chapters) {
+      // Go to next book if available
+      const bIndex = BIBLE_BOOKS.findIndex(b => b.name === this.readerBook);
+      if (bIndex < BIBLE_BOOKS.length - 1) {
+        const nextBook = BIBLE_BOOKS[bIndex + 1];
+        this.readerBook = nextBook.name;
+        this.readerChapter = 1;
+      } else {
+        return;
+      }
+    } else {
+      this.readerChapter = newChap;
+    }
+
+    const bookSelect = document.getElementById('reader-select-book');
+    const chapterSelect = document.getElementById('reader-select-chapter');
+    if (bookSelect) bookSelect.value = this.readerBook;
+    this.updateReaderChaptersDropdown();
+    if (chapterSelect) chapterSelect.value = this.readerChapter;
+
+    this.loadReaderChapter(this.readerBook, this.readerChapter);
+  }
+
+  async loadReaderChapter(book, chapter, targetVerseNumber = null) {
     this.readerBook = book;
     this.readerChapter = chapter;
 
@@ -817,6 +1024,15 @@ class GraceTasksApp {
       if (badgeEl) badgeEl.textContent = data.translation || "World English Bible";
 
       this.renderReaderVerses(data.verses);
+
+      if (targetVerseNumber) {
+        setTimeout(() => {
+          const verseIndex = data.verses.findIndex(v => v.verse === targetVerseNumber);
+          if (verseIndex !== -1) {
+            this.highlightReaderVerse(verseIndex);
+          }
+        }, 300);
+      }
     } catch (err) {
       if (container) {
         container.innerHTML = `<p class="text-rose-500 py-4">Unable to load ${book} ${chapter}. Please try another chapter.</p>`;
@@ -832,24 +1048,79 @@ class GraceTasksApp {
     container.style.fontSize = `${this.readerFontSize}px`;
 
     verses.forEach((v, index) => {
-      const p = document.createElement('p');
-      p.id = `reader-verse-${index}`;
-      p.className = 'group transition-colors duration-200 py-1 cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-300';
-      p.innerHTML = `
-        <span class="font-sans font-bold text-xs text-indigo-500 dark:text-indigo-400 mr-2 select-none">
-          ${v.verse}
-        </span>
-        <span class="verse-text">${this.escapeHtml(v.text)}</span>
+      const row = document.createElement('div');
+      row.id = `reader-verse-${index}`;
+      row.className = 'group transition-all duration-200 py-2 px-2.5 rounded-xl hover:bg-slate-100/70 dark:hover:bg-slate-800/60 flex items-start justify-between gap-3';
+      
+      row.innerHTML = `
+        <div class="flex-1 min-w-0">
+          <p class="font-scripture leading-relaxed">
+            <span class="font-sans font-bold text-xs text-indigo-600 dark:text-indigo-400 mr-2 select-none">
+              ${v.verse}
+            </span>
+            <span class="verse-text">${this.escapeHtml(v.text)}</span>
+          </p>
+        </div>
+
+        <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+          <button data-action="read-single" title="Listen to this verse" class="p-1 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-white dark:hover:bg-slate-700 transition">
+            <i data-lucide="volume-2" class="w-3.5 h-3.5"></i>
+          </button>
+          <button data-action="save-single" title="Save to favorites" class="p-1 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-white dark:hover:bg-slate-700 transition">
+            <i data-lucide="bookmark" class="w-3.5 h-3.5"></i>
+          </button>
+          <button data-action="task-single" title="Add as task" class="p-1 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-white dark:hover:bg-slate-700 transition">
+            <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
       `;
 
-      // Click individual verse to listen to that verse alone
-      p.addEventListener('click', () => {
+      // Listen single verse
+      row.querySelector('[data-action="read-single"]').addEventListener('click', (e) => {
+        e.stopPropagation();
         this.highlightReaderVerse(index);
         audioEngine.speak(`${this.readerBook} chapter ${this.readerChapter} verse ${v.verse}: ${v.text}`);
       });
 
-      container.appendChild(p);
+      // Save single verse
+      row.querySelector('[data-action="save-single"]').addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.toggleFavorite({
+          reference: `${this.readerBook} ${this.readerChapter}:${v.verse}`,
+          book: this.readerBook,
+          chapter: this.readerChapter,
+          text: v.text,
+          category: 'Scripture Reading'
+        });
+      });
+
+      // Task from verse
+      row.querySelector('[data-action="task-single"]').addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.addTask(
+          `Reflect on ${this.readerBook} ${this.readerChapter}:${v.verse}`,
+          'Faith & Prayer',
+          'Normal',
+          null,
+          {
+            reference: `${this.readerBook} ${this.readerChapter}:${v.verse}`,
+            text: v.text,
+            book: this.readerBook,
+            chapter: this.readerChapter
+          }
+        );
+      });
+
+      // Clicking row reads that verse
+      row.addEventListener('click', () => {
+        this.highlightReaderVerse(index);
+        audioEngine.speak(`${this.readerBook} chapter ${this.readerChapter} verse ${v.verse}: ${v.text}`);
+      });
+
+      container.appendChild(row);
     });
+
+    this.refreshIcons();
   }
 
   highlightReaderVerse(index) {
@@ -881,13 +1152,17 @@ class GraceTasksApp {
 
     // If currently playing, toggle pause/stop
     if (audioEngine.isPlayingTTS) {
-      audioEngine.stopTTS();
-      this.readerIsPlayingAll = false;
-      this.highlightReaderVerse(null);
-      if (playIcon) playIcon.setAttribute('data-lucide', 'play');
-      if (statusLabel) statusLabel.textContent = "Stopped";
-      if (waveform) waveform.classList.add('hidden', 'paused');
-      if (verseIndicator) verseIndicator.textContent = "Click play to listen to entire chapter";
+      if (audioEngine.isPausedTTS) {
+        audioEngine.resumeTTS();
+        if (playIcon) playIcon.setAttribute('data-lucide', 'pause');
+        if (statusLabel) statusLabel.textContent = "Reading Aloud";
+        if (waveform) waveform.classList.remove('paused');
+      } else {
+        audioEngine.pauseTTS();
+        if (playIcon) playIcon.setAttribute('data-lucide', 'play');
+        if (statusLabel) statusLabel.textContent = "Paused";
+        if (waveform) waveform.classList.add('paused');
+      }
       this.refreshIcons();
       return;
     }
@@ -922,8 +1197,10 @@ class GraceTasksApp {
 
       audioEngine.speak(verseSpeech, {
         onEnd: () => {
-          currentIdx++;
-          readNextVerse();
+          if (this.readerIsPlayingAll) {
+            currentIdx++;
+            readNextVerse();
+          }
         },
         onError: () => {
           this.readerIsPlayingAll = false;
@@ -935,6 +1212,23 @@ class GraceTasksApp {
     readNextVerse();
   }
 
+  stopEntireChapterAudio() {
+    this.readerIsPlayingAll = false;
+    audioEngine.stopTTS();
+    this.highlightReaderVerse(null);
+
+    const playIcon = document.getElementById('reader-play-icon');
+    const statusLabel = document.getElementById('reader-audio-status');
+    const waveform = document.getElementById('reader-waveform');
+    const verseIndicator = document.getElementById('reader-audio-verse-indicator');
+
+    if (playIcon) playIcon.setAttribute('data-lucide', 'play');
+    if (statusLabel) statusLabel.textContent = "Stopped";
+    if (waveform) waveform.classList.add('hidden', 'paused');
+    if (verseIndicator) verseIndicator.textContent = "Click play to listen to entire chapter, or click any verse below";
+    this.refreshIcons();
+  }
+
   openReaderForVerse(verse) {
     if (!verse) return;
     this.closePublishModal();
@@ -943,11 +1237,32 @@ class GraceTasksApp {
     const bookSelect = document.getElementById('reader-select-book');
     const chapterSelect = document.getElementById('reader-select-chapter');
 
-    if (bookSelect) bookSelect.value = verse.book;
-    this.initReaderSelectors();
+    this.readerBook = verse.book || 'Philippians';
+    this.readerChapter = verse.chapter || 4;
 
-    if (chapterSelect) chapterSelect.value = verse.chapter;
-    this.loadReaderChapter(verse.book, verse.chapter);
+    if (bookSelect) bookSelect.value = this.readerBook;
+    this.updateReaderChaptersDropdown();
+    if (chapterSelect) chapterSelect.value = this.readerChapter;
+
+    this.loadReaderChapter(this.readerBook, this.readerChapter, verse.startVerse || null);
+  }
+
+  jumpToRandomInspiringChapter() {
+    const list = bibleService.getInspiringChapters();
+    const item = list[Math.floor(Math.random() * list.length)];
+
+    this.readerBook = item.book;
+    this.readerChapter = item.chapter;
+
+    const bookSelect = document.getElementById('reader-select-book');
+    const chapterSelect = document.getElementById('reader-select-chapter');
+
+    if (bookSelect) bookSelect.value = this.readerBook;
+    this.updateReaderChaptersDropdown();
+    if (chapterSelect) chapterSelect.value = this.readerChapter;
+
+    this.loadReaderChapter(this.readerBook, this.readerChapter);
+    this.showToast(`Loaded: ${item.label}`);
   }
 
   // --- Theme Controller ---
@@ -1035,6 +1350,10 @@ class GraceTasksApp {
       this.scheduler.triggerPublish({ reason: 'manual-trigger' });
     });
 
+    document.getElementById('header-countdown-container')?.addEventListener('click', () => {
+      this.switchTab('scheduler');
+    });
+
     document.getElementById('btn-toggle-theme')?.addEventListener('click', () => {
       this.toggleTheme();
     });
@@ -1060,17 +1379,35 @@ class GraceTasksApp {
         const catSelect = document.getElementById('select-task-category');
         const prioSelect = document.getElementById('select-task-priority');
         const dueInput = document.getElementById('input-task-due');
+        const notesInput = document.getElementById('input-task-notes');
 
         this.addTask(
           titleInput.value,
           catSelect.value,
           prioSelect.value,
-          dueInput.value
+          dueInput.value,
+          null,
+          notesInput ? notesInput.value : ''
         );
 
         titleInput.value = '';
+        if (notesInput) notesInput.value = '';
       });
     }
+
+    // Due Today Button
+    document.getElementById('btn-due-today')?.addEventListener('click', () => {
+      const dueInput = document.getElementById('input-task-due');
+      if (dueInput) {
+        dueInput.value = new Date().toISOString().split('T')[0];
+        this.showToast("Due date set to Today");
+      }
+    });
+
+    // Clear completed tasks button
+    document.getElementById('btn-clear-completed')?.addEventListener('click', () => {
+      this.clearCompletedTasks();
+    });
 
     // Filter pills
     document.querySelectorAll('.filter-pill').forEach(pill => {
@@ -1105,9 +1442,43 @@ class GraceTasksApp {
       this.toggleFavorite(this.currentPublishedVerse || bibleService.getDailyVerse());
     });
 
+    document.getElementById('btn-shuffle-daily-verse')?.addEventListener('click', () => {
+      this.currentPublishedVerse = bibleService.getRandomVerse();
+      this.renderDailyVerseBanner();
+      this.showToast(`Refreshed: ${this.currentPublishedVerse.reference}`);
+    });
+
     // Scheduler Tab Controls
     document.getElementById('btn-scheduler-test-now')?.addEventListener('click', () => {
       this.scheduler.triggerPublish({ reason: 'manual-test' });
+    });
+
+    // Quick Preset Time Buttons
+    document.getElementById('btn-preset-1min')?.addEventListener('click', () => {
+      const scheduledTime = this.scheduler.scheduleTimeInMinutes(1);
+      this.renderScheduledTimes();
+      this.updateScheduleSummary();
+      this.showToast(`⚡ Screen alert scheduled in 1 minute (at ${scheduledTime})! Watch your screen!`);
+    });
+
+    document.getElementById('btn-preset-morning')?.addEventListener('click', () => {
+      this.addScheduledTimeFromPreset('07:00');
+    });
+
+    document.getElementById('btn-preset-noon')?.addEventListener('click', () => {
+      this.addScheduledTimeFromPreset('12:00');
+    });
+
+    document.getElementById('btn-preset-afternoon')?.addEventListener('click', () => {
+      this.addScheduledTimeFromPreset('15:00');
+    });
+
+    document.getElementById('btn-preset-evening')?.addEventListener('click', () => {
+      this.addScheduledTimeFromPreset('18:30');
+    });
+
+    document.getElementById('btn-preset-night')?.addEventListener('click', () => {
+      this.addScheduledTimeFromPreset('21:30');
     });
 
     document.getElementById('btn-add-publish-time')?.addEventListener('click', () => {
@@ -1115,15 +1486,7 @@ class GraceTasksApp {
       if (!timeInput || !timeInput.value) return;
 
       const timeVal = timeInput.value;
-      if (!this.scheduler.config.times.includes(timeVal)) {
-        this.scheduler.config.times.push(timeVal);
-        this.scheduler.config.times.sort();
-        this.scheduler.saveSettings();
-        this.renderScheduledTimes();
-        this.showToast(`Added publish time: ${timeVal}`);
-      } else {
-        this.showToast("This time is already scheduled!");
-      }
+      this.addScheduledTimeFromPreset(timeVal);
     });
 
     document.getElementById('btn-request-notifications')?.addEventListener('click', async () => {
@@ -1162,6 +1525,10 @@ class GraceTasksApp {
       this.toggleFavorite(this.currentPublishedVerse);
     });
 
+    document.getElementById('btn-popup-shuffle')?.addEventListener('click', () => {
+      this.shufflePopupVerse();
+    });
+
     document.getElementById('btn-popup-add-task')?.addEventListener('click', () => {
       if (this.currentPublishedVerse) {
         this.addTask(
@@ -1169,7 +1536,8 @@ class GraceTasksApp {
           'Faith & Prayer',
           'High',
           null,
-          this.currentPublishedVerse
+          this.currentPublishedVerse,
+          this.currentPublishedVerse.reflection
         );
         this.closePublishModal();
       }
@@ -1179,13 +1547,55 @@ class GraceTasksApp {
       this.openReaderForVerse(this.currentPublishedVerse);
     });
 
+    // Edit Task Modal
+    document.getElementById('btn-close-edit-modal')?.addEventListener('click', () => {
+      document.getElementById('modal-edit-task')?.classList.add('hidden');
+    });
+
+    document.getElementById('btn-cancel-edit-task')?.addEventListener('click', () => {
+      document.getElementById('modal-edit-task')?.classList.add('hidden');
+    });
+
+    document.getElementById('form-edit-task')?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const id = document.getElementById('edit-task-id')?.value;
+      const title = document.getElementById('edit-task-title')?.value;
+      const notes = document.getElementById('edit-task-notes')?.value;
+      const cat = document.getElementById('edit-task-category')?.value;
+      const prio = document.getElementById('edit-task-priority')?.value;
+      const due = document.getElementById('edit-task-due')?.value;
+
+      this.saveTaskEdit(id, title, notes, cat, prio, due);
+    });
+
+    // Attach Verse Modal
+    document.getElementById('btn-close-attach-modal')?.addEventListener('click', () => {
+      document.getElementById('modal-attach-verse')?.classList.add('hidden');
+    });
+
     // Reader Tab Controls
     document.getElementById('btn-load-chapter')?.addEventListener('click', () => {
       this.loadReaderChapter(this.readerBook, this.readerChapter);
     });
 
+    document.getElementById('btn-reader-prev-chapter')?.addEventListener('click', () => {
+      this.navigateChapter(-1);
+    });
+
+    document.getElementById('btn-reader-next-chapter')?.addEventListener('click', () => {
+      this.navigateChapter(1);
+    });
+
+    document.getElementById('btn-reader-random-chapter')?.addEventListener('click', () => {
+      this.jumpToRandomInspiringChapter();
+    });
+
     document.getElementById('btn-reader-play-audio')?.addEventListener('click', () => {
       this.playEntireChapterAudio();
+    });
+
+    document.getElementById('btn-reader-stop-audio')?.addEventListener('click', () => {
+      this.stopEntireChapterAudio();
     });
 
     document.getElementById('reader-speech-speed')?.addEventListener('change', (e) => {
@@ -1238,8 +1648,20 @@ class GraceTasksApp {
     });
   }
 
+  addScheduledTimeFromPreset(timeVal) {
+    if (!this.scheduler.config.times.includes(timeVal)) {
+      this.scheduler.config.times.push(timeVal);
+      this.scheduler.config.times.sort();
+      this.scheduler.saveSettings();
+      this.renderScheduledTimes();
+      this.showToast(`Added publish time: ${timeVal}`);
+    } else {
+      this.showToast(`Time ${timeVal} is already in your schedule!`);
+    }
+  }
+
   refreshIcons() {
-    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+    if (typeof window !== 'undefined' && window.lucide && typeof window.lucide.createIcons === 'function') {
       window.lucide.createIcons();
     }
   }
@@ -1256,6 +1678,8 @@ class GraceTasksApp {
 }
 
 // Initialize on DOM ready
-document.addEventListener('DOMContentLoaded', () => {
-  window.app = new GraceTasksApp();
-});
+if (typeof document !== 'undefined') {
+  document.addEventListener('DOMContentLoaded', () => {
+    window.app = new GraceTasksApp();
+  });
+}
